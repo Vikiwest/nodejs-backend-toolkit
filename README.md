@@ -9,7 +9,7 @@ Comprehensive production-ready Node.js + TypeScript + Express toolkit with 50+ f
 - **Cache:** Redis
 - **Queue:** Bull + ioredis (jobs, retries)
 - **Search:** Elasticsearch ready
-- **Payment:** Stripe
+- **Payment:** Paystack
 - **File Upload:** Multer + S3/Local
 - **Email:** Nodemailer templates
 - **WebSocket:** Socket.io real-time
@@ -84,7 +84,7 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 JWT_SECRET=your-32-char-secret
 # Optional:
-STRIPE_SECRET_KEY=
+PAYSTACK_SECRET_KEY=sk_test_...
 AWS_ACCESS_KEY_ID=
 ELASTICSEARCH_URL=
 SMTP_HOST=smtp.gmail.com

@@ -20,7 +20,7 @@ const config = {
   },
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT) || 6379,
+    port: parseInt(process.env.REDIS_PORT!) || 6379,
     password: process.env.REDIS_PASSWORD,
   },
   jwt: {
@@ -29,20 +29,23 @@ const config = {
     refreshSecret: process.env.JWT_REFRESH_SECRET,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
+  paystack: {
+    secretKey: process.env.PAYSTACK_SECRET_KEY,
+  },
   email: {
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT),
+    port: parseInt(process.env.SMTP_PORT!) || 587,
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
     from: process.env.EMAIL_FROM,
   },
   upload: {
-    maxSize: parseInt(process.env.MAX_FILE_SIZE) || 5242880,
+    maxSize: parseInt(process.env.MAX_FILE_SIZE!) || 5242880,
     allowedTypes: process.env.ALLOWED_FILE_TYPES?.split(',') || ['image/jpeg', 'image/png'],
   },
   rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000,
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS!) || 900000,
+    max: parseInt(process.env.RATE_LIMIT_MAX!) || 100,
   },
   encryption: {
     key: process.env.ENCRYPTION_KEY,

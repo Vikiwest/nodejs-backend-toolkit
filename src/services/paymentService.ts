@@ -1,115 +1,121 @@
-import Stripe from 'stripe';
+const Paystack = require('paystack');
 import config from '@/config/env';
 import { LoggerService } from '@/utils/logger';
 
+interface PaystackPaymentData {
+  reference: string;
+  authorization_url: string;
+  access_code: string;
+  amount: number;
+  currency: string;
+  email: string;
+}
+
 export class PaymentService {
-  private stripe: Stripe;
+  private paystack: any;
 
   constructor() {
-    if (config.stripe.secretKey) {
-      this.stripe = new Stripe(config.stripe.secretKey, {
-        apiVersion: '2023-10-16',
-      });
-      LoggerService.info('Payment service initialized');
+    if (config.paystack && config.paystack.secretKey) {
+      this.paystack = Paystack(config.paystack.secretKey);
+      LoggerService.info('Paystack payment service initialized');
     } else {
-      LoggerService.warn('Payment service not configured');
+      LoggerService.warn('Paystack payment service not configured');
     }
   }
 
-  async createPaymentIntent(amount: number, currency: string = 'usd', metadata?: any): Promise<Stripe.PaymentIntent> {
-    if (!this.stripe) throw new Error('Payment service not configured');
+  async createPaymentIntent(amount: number, currency: string = 'ngn', email: string, metadata?: any): Promise<PaystackPaymentData> {
+    if (!this.paystack) throw new Error('Payment service not configured');
 
     try {
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency,
-        metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
+      const response: any = await new Promise((resolve, reject) => {
+        this.paystack.transaction.initialize({
+          amount: Math.round(amount * 100),
+          currency,
+          email,
+          metadata: metadata || {},
+          channels: ['card', 'bank_transfer', 'ussd', 'qr'],
+          callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/payment/callback`,
+          reference: 'ref_' + Math.random().toString(36).substr(2, 9),
+        }, (error: any, body: any) => {
+          if (error) reject(error);
+          resolve(body);
+        });
       });
 
-      return paymentIntent;
+      return response.data;
     } catch (error) {
       LoggerService.error('Failed to create payment intent', error as Error);
       throw error;
     }
   }
 
-  async confirmPayment(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
-    if (!this.stripe) throw new Error('Payment service not configured');
+  async verifyPayment(reference: string): Promise<any> {
+    if (!this.paystack) throw new Error('Payment service not configured');
 
     try {
-      return await this.stripe.paymentIntents.confirm(paymentIntentId);
+      const response: any = await new Promise((resolve, reject) => {
+        this.paystack.transaction.verify(reference, (error: any, body: any) => {
+          if (error) reject(error);
+          resolve(body);
+        });
+      });
+
+      LoggerService.info('Payment verified', { reference });
+      return response.data;
     } catch (error) {
-      LoggerService.error('Failed to confirm payment', error as Error);
+      LoggerService.error('Failed to verify payment', error as Error);
       throw error;
     }
   }
 
-  async refundPayment(paymentIntentId: string, amount?: number): Promise<Stripe.Refund> {
-    if (!this.stripe) throw new Error('Payment service not configured');
+  async refundPayment(transactionId: string): Promise<any> {
+    if (!this.paystack) throw new Error('Payment service not configured');
 
     try {
-      return await this.stripe.refunds.create({
-        payment_intent: paymentIntentId,
-        amount: amount ? Math.round(amount * 100) : undefined,
+      const response: any = await new Promise((resolve, reject) => {
+        this.paystack.transaction.refund(transactionId, (error: any, body: any) => {
+          if (error) reject(error);
+          resolve(body);
+        });
       });
+
+      LoggerService.info('Refund processed', { transactionId });
+      return response.data;
     } catch (error) {
       LoggerService.error('Failed to refund payment', error as Error);
       throw error;
     }
   }
 
-  async createCustomer(email: string, name?: string): Promise<Stripe.Customer> {
-    if (!this.stripe) throw new Error('Payment service not configured');
+  async createCustomer(email: string, name?: string): Promise<any> {
+    if (!this.paystack) throw new Error('Payment service not configured');
 
     try {
-      return await this.stripe.customers.create({
-        email,
-        name,
+      const response: any = await new Promise((resolve, reject) => {
+        this.paystack.customer.create({
+          email,
+          first_name: name ? name.split(' ')[0] : '',
+          last_name: name ? name.split(' ').slice(1).join(' ') : '',
+          phone: '',
+          metadata: {},
+        }, (error: any, body: any) => {
+          if (error) reject(error);
+          resolve(body);
+        });
       });
+      return response.data;
     } catch (error) {
       LoggerService.error('Failed to create customer', error as Error);
       throw error;
     }
   }
 
-  async createSubscription(customerId: string, priceId: string): Promise<Stripe.Subscription> {
-    if (!this.stripe) throw new Error('Payment service not configured');
-
+  async handleWebhook(event: any): Promise<void> {
     try {
-      return await this.stripe.subscriptions.create({
-        customer: customerId,
-        items: [{ price: priceId }],
-        payment_behavior: 'default_incomplete',
-        expand: ['latest_invoice.payment_intent'],
-      });
+      LoggerService.info('Paystack webhook', event);
+      // Verify & process
     } catch (error) {
-      LoggerService.error('Failed to create subscription', error as Error);
-      throw error;
-    }
-  }
-
-  async handleWebhook(event: Stripe.Event): Promise<void> {
-    switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        LoggerService.info('Payment succeeded', { paymentIntentId: paymentIntent.id });
-        // Handle successful payment
-        break;
-      case 'payment_intent.payment_failed':
-        const failedPayment = event.data.object as Stripe.PaymentIntent;
-        LoggerService.error('Payment failed', { paymentIntentId: failedPayment.id });
-        // Handle failed payment
-        break;
-      case 'customer.subscription.created':
-        const subscription = event.data.object as Stripe.Subscription;
-        LoggerService.info('Subscription created', { subscriptionId: subscription.id });
-        // Handle subscription created
-        break;
-      default:
-        LoggerService.info(`Unhandled event type: ${event.type}`);
+      LoggerService.error('Webhook error', error as Error);
     }
   }
 }
