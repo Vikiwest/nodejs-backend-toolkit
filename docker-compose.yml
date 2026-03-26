@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: toolkit-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - toolkit-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: toolkit-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - toolkit-network
+
+  app:
+    build: .
+    container_name: toolkit-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/toolkit?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - toolkit-network
+    volumes:
+      - ./logs:/app/logs
+
+networks:
+  toolkit-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
