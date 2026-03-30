@@ -21,9 +21,13 @@ class Server {
       await databaseConnection.connect();
       logger.info('MongoDB connected successfully');
 
-      // Connect to Redis
-      await cacheService.set('health_check', 'OK', 10);
-      logger.info('Redis connected successfully');
+      // Cache health check (in-memory)
+      const success = await cacheService.set('health_check', 'OK', 10);
+      if (success) {
+        logger.info('Cache service ready');
+      } else {
+        logger.warn('Cache service not available');
+      }
 
       // Create HTTP server
       this.httpServer = this.app.getApp().listen(config.port, () => {
@@ -83,17 +87,25 @@ class Server {
   }
 }
 
-// Handle uncaught exceptions
+// Handle uncaught exceptions (synced with unhandledRejection)
 process.on('uncaughtException', (error: Error) => {
-  logger.error('Uncaught Exception', error);
+  logger.error('Uncaught Exception', {
+    error,
+    stack: error.stack,
+  });
   // Perform cleanup before exiting
   process.exit(1);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Perform cleanup before exiting
+  logger.error('Unhandled Rejection', {
+    reason: reason || 'Unknown reason',
+    promise,
+    stack: reason?.stack || new Error().stack,
+  });
+  // TODO: Implement proper cleanup or error reporting service integration
+  // For now, exit to prevent corrupted state
   process.exit(1);
 });
 

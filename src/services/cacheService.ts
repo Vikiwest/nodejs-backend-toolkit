@@ -1,141 +1,113 @@
-import { createClient, RedisClientType } from "redis";
-import config from "@/config/env";
-import { LoggerService } from "@/utils/logger";
-import { CacheService as ICacheService } from "@/types";
+import { LoggerService } from '@/utils/logger';
+import { CacheService as ICacheService } from '@/types';
+
+interface CacheEntry {
+  value: any;
+  expiry: number;
+}
 
 export class CacheService implements ICacheService {
-  private client: RedisClientType | null = null;
-  private isConnected: boolean = false;
-
-  constructor() {
-    this.init();
-  }
-
-  private async init(): Promise<void> {
-    try {
-      this.client = createClient({
-        socket: {
-          host: config.redis.host,
-          port: config.redis.port,
-        },
-        password: config.redis.password,
-      });
-
-      this.client.on("error", (err) => {
-        LoggerService.error("Redis Client Error", err);
-        this.isConnected = false;
-      });
-
-      this.client.on("connect", () => {
-        LoggerService.info("Redis connected successfully");
-        this.isConnected = true;
-      });
-
-      await this.client.connect();
-    } catch (error) {
-      LoggerService.error("Failed to connect to Redis", error as Error);
-      this.isConnected = false;
-    }
-  }
+  private cache = new Map<string, CacheEntry>();
+  private isReady = true;
 
   async get<T>(key: string): Promise<T | null> {
-    if (!this.isConnected || !this.client) return null;
-
     try {
-      const data = await this.client.get(key);
-      return data ? JSON.parse(data) : null;
+      const entry = this.cache.get(key);
+      if (!entry) return null;
+
+      if (Date.now() > entry.expiry) {
+        this.cache.delete(key);
+        return null;
+      }
+
+      return entry.value as T;
     } catch (error) {
-      LoggerService.error("Redis get error", error as Error);
+      LoggerService.error('Cache get error', error as Error);
       return null;
     }
   }
 
-  async set(
-    key: string,
-    value: any,
-    ttlSeconds: number = 3600,
-  ): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-
+  async set(key: string, value: any, ttlSeconds: number = 3600): Promise<boolean> {
     try {
-      await this.client.set(key, JSON.stringify(value), {
-        EX: ttlSeconds,
+      this.cache.set(key, {
+        value,
+        expiry: Date.now() + ttlSeconds * 1000,
       });
       return true;
     } catch (error) {
-      LoggerService.error("Redis set error", error as Error);
+      LoggerService.error('Cache set error', error as Error);
       return false;
     }
   }
 
   async del(key: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-
     try {
-      await this.client.del(key);
+      this.cache.delete(key);
       return true;
     } catch (error) {
-      LoggerService.error("Redis delete error", error as Error);
+      LoggerService.error('Cache delete error', error as Error);
       return false;
     }
   }
 
   async clearPattern(pattern: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-
     try {
-      const keys = await this.client.keys(pattern);
-      if (keys.length > 0) {
-        await this.client.del(keys);
+      for (const key of this.cache.keys()) {
+        if (key.includes(pattern)) {
+          this.cache.delete(key);
+        }
       }
       return true;
     } catch (error) {
-      LoggerService.error("Redis clear pattern error", error as Error);
+      LoggerService.error('Cache clear pattern error', error as Error);
       return false;
     }
   }
 
   async exists(key: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-
     try {
-      const result = await this.client.exists(key);
-      return result === 1;
+      const entry = this.cache.get(key);
+      if (!entry) return false;
+
+      if (Date.now() > entry.expiry) {
+        this.cache.delete(key);
+        return false;
+      }
+      return true;
     } catch (error) {
-      LoggerService.error("Redis exists error", error as Error);
+      LoggerService.error('Cache exists error', error as Error);
       return false;
     }
   }
 
   async increment(key: string, by: number = 1): Promise<number | null> {
-    if (!this.isConnected || !this.client) return null;
-
     try {
-      return await this.client.incrBy(key, by);
+      const entry = await this.get<number>(key);
+      const newValue = (entry || 0) + by;
+      await this.set(key, newValue);
+      return newValue;
     } catch (error) {
-      LoggerService.error("Redis increment error", error as Error);
+      LoggerService.error('Cache increment error', error as Error);
       return null;
     }
   }
 
   async expire(key: string, seconds: number): Promise<boolean> {
-    if (!this.isConnected || !this.client) return false;
-
     try {
-      return await this.client.expire(key, seconds);
+      const value = await this.get(key);
+      if (value !== null) {
+        await this.set(key, value, seconds);
+      }
+      return true;
     } catch (error) {
-      LoggerService.error("Redis expire error", error as Error);
+      LoggerService.error('Cache expire error', error as Error);
       return false;
     }
   }
 
   async disconnect(): Promise<void> {
-    if (this.client && this.isConnected) {
-      await this.client.quit();
-      this.isConnected = false;
-      this.client = null;
-      logger.info("Redis disconnected");
-    }
+    this.cache.clear();
+    logger.info('In-memory cache cleared');
   }
 }
 

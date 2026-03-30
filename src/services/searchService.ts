@@ -42,7 +42,77 @@ export class SearchService {
     }
   }
 
-  async search<T>(options: SearchOptions): Promise<{ items: T[]; total: number }> {
+async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: number }> {
+    const must = [];
+    
+    if (query) {
+      must.push({
+        multi_match: {
+          query,
+          fields: ['name^3', 'email^2', 'bio'],
+          fuzziness: 'AUTO',
+        },
+      });
+    }
+    
+    if (filters?.role) {
+      must.push({ term: { role: filters.role } });
+    }
+    
+    if (filters?.isActive !== undefined) {
+      must.push({ term: { isActive: filters.isActive } });
+    }
+    
+    const result = await this.client.search({
+      index: 'users',
+      body: {
+        query: { bool: { must } },
+        highlight: {
+          fields: {
+            name: {},
+            email: {},
+            bio: {},
+          },
+        },
+        suggest: {
+          name_suggest: {
+            prefix: query,
+            completion: {
+              field: 'name_suggest',
+              fuzzy: { fuzziness: 1 },
+            },
+          },
+        },
+      },
+    });
+    
+    return {
+      items: result.hits.hits.map(hit => hit._source),
+      total: typeof result.hits.total === 'number' ? result.hits.total : result.hits.total?.value || 0,
+    };
+  }
+
+async reindexAll() {
+    const UserModel = (await import('../models/user.model')).UserModel;
+    const users = await UserModel.find({ isDeleted: false });
+    const operations = users.flatMap(user => [
+      { index: { _index: 'users', _id: user._id.toString() } },
+      {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        name_suggest: {
+          input: user.name.split(' '),
+          weight: user.role === 'admin' ? 10 : 1,
+        },
+      },
+    ]);
+    
+    await this.client.bulk({ body: operations });
+  }
+
+async search<T>(options: SearchOptions): Promise<{ items: T[]; total: number }> {
     if (!this.client) {
       return { items: [], total: 0 };
     }

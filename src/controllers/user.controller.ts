@@ -1,16 +1,17 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { AuthRequest } from '@/types';
 import { UserModel } from '@/models/user.model';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
 import { cacheService } from '@/services/cacheService';
 import { auditService } from '@/services/auditService';
-import { AuthRequest, PaginationQuery } from '@/types';
+import { ExportService } from '@/services/exportService';
+import type { PaginationQuery } from '@/types';
 
 export class UserController {
   static getProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
-    // Try cache first
     const cacheKey = `user:profile:${userId}`;
     let user = await cacheService.get(cacheKey);
 
@@ -19,7 +20,7 @@ export class UserController {
       if (!user) {
         return ApiResponseUtil.notFound(res, 'User not found');
       }
-      await cacheService.set(cacheKey, user, 300); // Cache for 5 minutes
+      await cacheService.set(cacheKey, user, 300);
     }
 
     ApiResponseUtil.success(res, user);
@@ -27,28 +28,24 @@ export class UserController {
 
   static updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
-    const updates = req.body;
+    const updates = req.body as any;
 
-    // Remove restricted fields
-    delete updates.password;
-    delete updates.email;
-    delete updates.role;
-    delete updates.isActive;
+    if (updates.password) delete updates.password;
+    if (updates.email) delete updates.email;
+    if (updates.role) delete updates.role;
+    if (updates.isActive) delete updates.isActive;
 
-    const user = await UserModel.findByIdAndUpdate(
-      userId,
-      updates,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const user = await UserModel.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
 
     if (!user) {
       return ApiResponseUtil.notFound(res, 'User not found');
     }
 
-    // Clear cache
     await cacheService.del(`user:profile:${userId}`);
 
-    // Audit log
     await auditService.log({
       userId,
       action: 'UPDATE_PROFILE',
@@ -61,6 +58,34 @@ export class UserController {
     ApiResponseUtil.success(res, user, 'Profile updated successfully');
   });
 
+  static updateAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const { avatarUrl } = req.body as any;
+
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { avatar: avatarUrl },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return ApiResponseUtil.notFound(res, 'User not found');
+    }
+
+    await cacheService.del(`user:profile:${userId}`);
+
+    await auditService.log({
+      userId,
+      action: 'UPDATE_AVATAR',
+      resource: 'User',
+      resourceId: userId,
+      changes: { avatar: avatarUrl },
+      req,
+    });
+
+    ApiResponseUtil.success(res, user, 'Avatar updated successfully');
+  });
+
   static deleteAccount = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
@@ -71,10 +96,8 @@ export class UserController {
 
     await user.softDelete();
 
-    // Clear cache
     await cacheService.del(`user:profile:${userId}`);
 
-    // Audit log
     await auditService.log({
       userId,
       action: 'DELETE_ACCOUNT',
@@ -88,20 +111,18 @@ export class UserController {
 
   static changeEmail = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
-    const { newEmail, password } = req.body;
+    const { newEmail, password } = req.body as any;
 
     const user = await UserModel.findById(userId).select('+password');
     if (!user) {
       return ApiResponseUtil.notFound(res, 'User not found');
     }
 
-    // Verify password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return ApiResponseUtil.unauthorized(res, 'Invalid password');
     }
 
-    // Check if email is already taken
     const existingUser = await UserModel.findOne({ email: newEmail });
     if (existingUser && existingUser._id.toString() !== userId) {
       return ApiResponseUtil.conflict(res, 'Email already in use');
@@ -112,10 +133,8 @@ export class UserController {
     user.isEmailVerified = false;
     await user.save();
 
-    // Clear cache
     await cacheService.del(`user:profile:${userId}`);
 
-    // Audit log
     await auditService.log({
       userId,
       action: 'CHANGE_EMAIL',
@@ -129,12 +148,19 @@ export class UserController {
   });
 
   static getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', search, role, isActive } = req.query as PaginationQuery & { role?: string; isActive?: string };
+    const {
+      page = '1',
+      limit = '10',
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search,
+      role,
+      isActive,
+    } = req.query as any;
 
-    const skip = (page - 1) * limit;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     const sort: any = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
 
-    // Build filter
     const filter: any = { isDeleted: false };
     if (role) filter.role = role;
     if (isActive !== undefined) filter.isActive = isActive === 'true';
@@ -146,19 +172,15 @@ export class UserController {
     }
 
     const [users, total] = await Promise.all([
-      UserModel.find(filter)
-        .select('-password')
-        .sort(sort)
-        .skip(skip)
-        .limit(limit),
+      UserModel.find(filter).select('-password').sort(sort).skip(skip).limit(parseInt(limit)),
       UserModel.countDocuments(filter),
     ]);
 
-    ApiResponseUtil.paginated(res, users, total, page, limit);
+    ApiResponseUtil.paginated(res, users, total, parseInt(page), parseInt(limit));
   });
 
   static getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
+    const { id } = req.params as any;
 
     const user = await UserModel.findById(id).select('-password');
     if (!user || user.isDeleted) {
@@ -169,8 +191,8 @@ export class UserController {
   });
 
   static updateUserRole = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    const { role } = req.body;
+    const { id } = req.params as any;
+    const { role } = req.body as any;
 
     const user = await UserModel.findByIdAndUpdate(
       id,
@@ -182,10 +204,8 @@ export class UserController {
       return ApiResponseUtil.notFound(res, 'User not found');
     }
 
-    // Clear cache
     await cacheService.del(`user:profile:${id}`);
 
-    // Audit log
     await auditService.log({
       userId: req.user!.id,
       action: 'UPDATE_USER_ROLE',
@@ -199,23 +219,19 @@ export class UserController {
   });
 
   static toggleUserStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
-    const { isActive } = req.body;
+    const { id } = req.params as any;
+    const { isActive } = req.body as any;
 
-    const user = await UserModel.findByIdAndUpdate(
-      id,
-      { isActive },
-      { new: true }
-    ).select('-password');
+    const user = await UserModel.findByIdAndUpdate(id, { isActive }, { new: true }).select(
+      '-password'
+    );
 
     if (!user) {
       return ApiResponseUtil.notFound(res, 'User not found');
     }
 
-    // Clear cache
     await cacheService.del(`user:profile:${id}`);
 
-    // Audit log
     await auditService.log({
       userId: req.user!.id,
       action: isActive ? 'ACTIVATE_USER' : 'DEACTIVATE_USER',
@@ -225,11 +241,22 @@ export class UserController {
       req,
     });
 
-    ApiResponseUtil.success(res, user, `User ${isActive ? 'activated' : 'deactivated'} successfully`);
+    ApiResponseUtil.success(
+      res,
+      user,
+      `User ${isActive ? 'activated' : 'deactivated'} successfully`
+    );
+  });
+
+  static getUserActivity = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { id } = req.params as any;
+    const activity = await auditService.getUserActivity(id);
+
+    ApiResponseUtil.success(res, activity);
   });
 
   static deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
+    const { id } = req.params as any;
 
     const user = await UserModel.findById(id);
     if (!user) {
@@ -238,10 +265,8 @@ export class UserController {
 
     await user.softDelete();
 
-    // Clear cache
     await cacheService.del(`user:profile:${id}`);
 
-    // Audit log
     await auditService.log({
       userId: req.user!.id,
       action: 'DELETE_USER',
@@ -254,19 +279,15 @@ export class UserController {
   });
 
   static bulkDeleteUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { userIds } = req.body;
+    const { userIds } = req.body as any;
 
     const result = await UserModel.updateMany(
       { _id: { $in: userIds } },
       { isDeleted: true, deletedAt: new Date() }
     );
 
-    // Clear cache for all deleted users
-    await Promise.all(
-      userIds.map((id: string) => cacheService.del(`user:profile:${id}`))
-    );
+    await Promise.all(userIds.map((id: string) => cacheService.del(`user:profile:${id}`)));
 
-    // Audit log
     await auditService.log({
       userId: req.user!.id,
       action: 'BULK_DELETE_USERS',
@@ -275,6 +296,69 @@ export class UserController {
       req,
     });
 
-    ApiResponseUtil.success(res, { deletedCount: result.modifiedCount }, 'Users deleted successfully');
+    ApiResponseUtil.success(
+      res,
+      { deletedCount: result.modifiedCount },
+      'Users deleted successfully'
+    );
+  });
+
+  static exportUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { format } = req.query as any;
+
+    const users = await UserModel.find({ isDeleted: false }).select('-password');
+    const data = format === 'csv' ? ExportService.exportToCSV(users, 'users') : users;
+    res.set({
+      'Content-Type': format === 'csv' ? 'text/csv' : 'application/json',
+      'Content-Disposition': `attachment; filename="users.${format}"`,
+    });
+    res.send(data);
+  });
+
+  static getUserStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const stats = await UserModel.aggregate([
+      { $match: { isDeleted: false } },
+      {
+        $group: {
+          _id: '$role',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          roles: { $push: { role: '$_id', count: '$count' } },
+          total: { $sum: '$count' },
+          active: {
+            $sum: {
+              $cond: [{ $eq: ['$isActive', true] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    const growth = await UserModel.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    ApiResponseUtil.success(res, {
+      stats: stats[0] || { total: 0, active: 0, roles: [] },
+      growth,
+    });
   });
 }

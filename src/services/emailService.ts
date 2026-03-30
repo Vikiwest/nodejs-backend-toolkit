@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import config from '@/config/env';
 import { LoggerService } from '@/utils/logger';
 
 interface EmailOptions {
@@ -26,14 +25,14 @@ export class EmailService {
   }
 
   private init(): void {
-    if (config.email.host && config.email.user && config.email.pass) {
+    if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       this.transporter = nodemailer.createTransport({
-        host: config.email.host,
-        port: config.email.port,
-        secure: config.email.port === 465,
+        host: process.env.EMAIL_HOST,
+        port: parseInt(process.env.EMAIL_PORT || '587'),
+        secure: parseInt(process.env.EMAIL_PORT || '587') === 465,
         auth: {
-          user: config.email.user,
-          pass: config.email.pass,
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
         },
       });
       LoggerService.info('Email service initialized');
@@ -50,7 +49,7 @@ export class EmailService {
 
     try {
       const mailOptions = {
-        from: options.from || config.email.from,
+        from: options.from || process.env.EMAIL_FROM || 'no-reply@yourapp.com',
         to: Array.isArray(options.to) ? options.to.join(',') : options.to,
         subject: options.subject,
         text: options.text,
@@ -70,7 +69,7 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(to: string, name: string): Promise<boolean> {
-    const subject = `Welcome to ${config.appName}!`;
+    const subject = 'Welcome to BackendToolkit!';
     const html = `
       <!DOCTYPE html>
       <html>
@@ -87,11 +86,11 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to ${config.appName}!</h1>
+            <h1>Welcome to BackendToolkit!</h1>
           </div>
           <div class="content">
             <h2>Hello ${name},</h2>
-            <p>Thank you for joining ${config.appName}. We're excited to have you on board!</p>
+            <p>Thank you for joining BackendToolkit. We're excited to have you on board!</p>
             <p>Here are a few things you can do to get started:</p>
             <ul>
               <li>Complete your profile</li>
@@ -99,12 +98,12 @@ export class EmailService {
               <li>Connect with other users</li>
             </ul>
             <p>
-              <a href="${process.env.APP_URL}/dashboard" class="button">Go to Dashboard</a>
+              <a href="${process.env.APP_URL || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
             </p>
           </div>
           <div class="footer">
             <p>If you have any questions, feel free to contact our support team.</p>
-            <p>&copy; ${new Date().getFullYear()} ${config.appName}. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} BackendToolkit. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -115,7 +114,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<boolean> {
-    const resetUrl = `${process.env.APP_URL}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
     const subject = 'Password Reset Request';
     const html = `
       <!DOCTYPE html>
@@ -147,7 +146,7 @@ export class EmailService {
             <p><code>${resetUrl}</code></p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} ${config.appName}. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} BackendToolkit. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -158,7 +157,7 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, token: string): Promise<boolean> {
-    const verifyUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+    const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
     const subject = 'Verify Your Email Address';
     const html = `
       <!DOCTYPE html>
@@ -185,7 +184,7 @@ export class EmailService {
             <p>If you didn't create an account with us, you can safely ignore this email.</p>
           </div>
           <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} ${config.appName}. All rights reserved.</p>
+            <p>&copy; ${new Date().getFullYear()} BackendToolkit. All rights reserved.</p>
           </div>
         </div>
       </body>

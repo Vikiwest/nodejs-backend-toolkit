@@ -1,13 +1,17 @@
-const crypto = require('crypto');
-const config = require('../config/env');
+import crypto from 'crypto';
+import { config } from '@/config/env';
 
 class EncryptionService {
   constructor() {
     this.algorithm = 'aes-256-cbc';
-    this.key = Buffer.from(config.encryption.key, 'utf-8');
-    this.iv = Buffer.from(config.encryption.iv, 'utf-8');
+    this.key = config.encryption.key
+      ? Buffer.from(config.encryption.key, 'utf-8')
+      : Buffer.from('default32bytekeyhere123456789012', 'utf-8');
+    this.iv = config.encryption.iv
+      ? Buffer.from(config.encryption.iv, 'utf-8')
+      : Buffer.from('default16byteivhere', 'utf-8');
   }
-  
+
   /**
    * Encrypt text
    */
@@ -17,7 +21,7 @@ class EncryptionService {
     encrypted += cipher.final('hex');
     return encrypted;
   }
-  
+
   /**
    * Decrypt text
    */
@@ -27,7 +31,7 @@ class EncryptionService {
     decrypted += decipher.final('utf8');
     return decrypted;
   }
-  
+
   /**
    * Hash password with bcrypt
    */
@@ -36,7 +40,7 @@ class EncryptionService {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
   }
-  
+
   /**
    * Compare password with hash
    */
@@ -44,7 +48,7 @@ class EncryptionService {
     const bcrypt = require('bcryptjs');
     return await bcrypt.compare(password, hash);
   }
-  
+
   /**
    * Generate random token
    */
@@ -53,4 +57,4 @@ class EncryptionService {
   }
 }
 
-module.exports = new EncryptionService();
+export const EncryptionService = new EncryptionService();

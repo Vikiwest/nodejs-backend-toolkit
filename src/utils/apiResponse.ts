@@ -4,6 +4,14 @@ import { Response } from 'express';
  * Standard API response formatter
  */
 export class ApiResponseUtil {
+  static validationError(res: Response, errors: string[]): Response {
+    return this.badRequest(res, `Validation failed: ${errors.join(', ')}`);
+  }
+
+  static conflict(res: Response, message: string = 'Conflict'): Response {
+    return this.error(res, new Error(message), 409, message);
+  }
+
   static success(
     res: Response,
     data: any,
@@ -24,7 +32,7 @@ export class ApiResponseUtil {
     statusCode: number = 500,
     message: string = 'Internal Server Error'
   ): Response {
-    const response = {
+    const response: any = {
       success: false,
       message: error.message || message,
       statusCode,
@@ -32,7 +40,7 @@ export class ApiResponseUtil {
     };
 
     if (process.env.NODE_ENV === 'development') {
-      response['error'] = error.stack;
+      response.error = error.stack;
     }
 
     return res.status(statusCode).json(response);

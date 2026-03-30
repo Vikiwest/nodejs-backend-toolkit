@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const config = {
+export const config = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
   appName: process.env.APP_NAME || 'BackendToolkit',
@@ -33,10 +33,10 @@ const config = {
     secretKey: process.env.PAYSTACK_SECRET_KEY,
   },
   email: {
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT!) || 587,
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT!) || 587,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
     from: process.env.EMAIL_FROM,
   },
   upload: {
@@ -46,6 +46,18 @@ const config = {
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS!) || 900000,
     max: parseInt(process.env.RATE_LIMIT_MAX!) || 100,
+  },
+  elasticsearch: {
+    url: process.env.ELASTICSEARCH_URL,
+    apiKey: process.env.ELASTICSEARCH_API_KEY,
+  },
+  apm: {
+    serverUrl: process.env.ELASTIC_APM_SERVER_URL,
+    secretToken: process.env.ELASTIC_APM_SECRET_TOKEN,
+  },
+  unleash: {
+    url: process.env.UNLEASH_URL,
+    instanceId: process.env.UNLEASH_INSTANCE_ID,
   },
   encryption: {
     key: process.env.ENCRYPTION_KEY,
@@ -58,4 +70,4 @@ if (!config.jwt.secret && config.nodeEnv === 'production') {
   throw new Error('JWT_SECRET is required in production');
 }
 
-module.exports = config;
+export default config;
