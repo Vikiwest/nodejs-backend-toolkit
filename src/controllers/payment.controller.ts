@@ -20,6 +20,25 @@ export class PaymentController {
     ApiResponseUtil.success(res, { id, status: 'succeeded' });
   });
 
+  static getUserPayments = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { userId } = req.params;
+    const { page = '1', limit = '10' } = req.query as any;
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    // Stub data
+    const payments = Array.from({ length: limitNum }, (_, i) => ({
+      id: `pay_${userId}_${i + 1}`,
+      amount: 100 + i * 5,
+      currency: 'usd',
+      status: 'succeeded',
+      userId,
+      createdAt: new Date().toISOString(),
+    }));
+
+    ApiResponseUtil.paginated(res, payments, 50, pageNum, limitNum);
+  });
+
   static refundPayment = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     ApiResponseUtil.success(res, { refunded: true });

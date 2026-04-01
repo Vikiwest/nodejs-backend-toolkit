@@ -16,7 +16,7 @@ module.exports = {
       time: true,
       merge_logs: true,
       kill_timeout: 5000,
-      listen_timeout: 3000,
+      listen_timeout: 3002,
     },
   ],
 };

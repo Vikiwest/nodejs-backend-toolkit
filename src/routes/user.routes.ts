@@ -23,11 +23,7 @@ const changeEmailSchema = {
   }),
 };
 
-const userIdParamSchema = {
-  params: Joi.object({
-    id: commonSchemas.id,
-  }),
-};
+const userIdParamSchema = commonSchemas.id;
 
 const paginationSchema = {
   query: Joi.object({
@@ -57,32 +53,93 @@ const avatarSchema = {
 router.use(authMiddleware());
 
 /**
- * @summary Get current user profile
- * @description Get authenticated user's profile data (cached).
- * @tags User
- * @security bearerAuth
- * @response 200 - User profile
- * @response 404 - User not found
+ * @swagger
+ * /api/users/profile:
+ *   get:
+ *     summary: Get current user profile
+ *     description: Get authenticated user's profile data (cached).
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
  */
 router.get('/profile', UserController.getProfile);
 
 /**
- * @summary Update current user profile
- * @description Update name, phone, bio. Avatar via separate endpoint.
- * @tags User
- * @security bearerAuth
- * @body updateProfileSchema
- * @response 200 - Updated profile
+ * @swagger
+ * /api/users/profile:
+ *   put:
+ *     summary: Update current user profile
+ *     description: Update name, phone, bio. Avatar via separate endpoint.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 100
+ *               phone:
+ *                 type: string
+ *                 pattern: '^[0-9]{10,15}$'
+ *               avatar:
+ *                 type: string
+ *                 format: uri
+ *               bio:
+ *                 type: string
+ *                 maxLength: 500
+ *     responses:
+ *       200:
+ *         description: Updated profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
 router.put('/profile', validate(updateProfileSchema), UserController.updateProfile);
 
 /**
- * @summary Update user avatar
- * @description Set user avatar URL (call upload/avatar first).
- * @tags User
- * @security bearerAuth
- * @body { avatarUrl: string }
- * @response 200 - Updated user
+ * @swagger
+ * /api/users/avatar:
+ *   put:
+ *     summary: Update user avatar
+ *     description: Set user avatar URL (call upload/avatar first).
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               avatarUrl:
+ *                 type: string
+ *                 format: uri
+ *             required:
+ *               - avatarUrl
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
 router.put('/avatar', validate(avatarSchema), UserController.updateAvatar);
 
@@ -96,24 +153,92 @@ router.put('/avatar', validate(avatarSchema), UserController.updateAvatar);
 router.delete('/profile', UserController.deleteAccount);
 
 /**
- * @summary Change user email
- * @description Change email with password verification.
- * @tags User
- * @security bearerAuth
- * @body changeEmailSchema
- * @response 200 - Email changed
- * @response 409 - Email in use
+ * @swagger
+ * /api/users/change-email:
+ *   put:
+ *     summary: Change user email
+ *     description: Change email with password verification.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newEmail:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *             required:
+ *               - newEmail
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Email changed
+ *       409:
+ *         description: Email in use
  */
-router.post('/change-email', validate(changeEmailSchema), UserController.changeEmail);
+router.put('/change-email', validate(changeEmailSchema), UserController.changeEmail);
 
 // Admin routes - tag 'User-Admin'
 /**
- * @summary Get all users (paginated)
- * @description Admin list of all users with search/filter.
- * @tags User-Admin
- * @security bearerAuth
- * @query paginationSchema
- * @response 200 - Paginated users
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Get all users (paginated)
+ *     description: Admin list of all users with search/filter.
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [user, admin, moderator]
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Paginated users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedResponse'
  */
 router.get(
   '/',
@@ -123,32 +248,75 @@ router.get(
 );
 
 /**
- * @summary Get user by ID
- * @tags User-Admin
- * @security bearerAuth
- * @param id path string.required
- * @response 200 - User details
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
  */
 router.get(
   '/:id',
   requireRole('admin', 'super_admin'),
-  validate(userIdParamSchema),
+  validate({ params: Joi.object({ id: commonSchemas.id }) }),
   UserController.getUserById
 );
 
 /**
- * @summary Update user role
- * @tags User-Admin
- * @security bearerAuth
- * @param id path string.required
- * @body { role: enum }
- * @response 200 - Updated user
+ * @swagger
+ * /api/users/{id}/role:
+ *   put:
+ *     summary: Update user role
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin, moderator]
+ *             required:
+ *               - role
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
 router.put(
   '/:id/role',
   requireRole('super_admin'),
   validate({
-    params: userIdParamSchema,
+    params: Joi.object({ id: commonSchemas.id }),
     body: Joi.object({
       role: Joi.string().valid('user', 'admin', 'moderator').required(),
     }),
@@ -157,18 +325,110 @@ router.put(
 );
 
 /**
- * @summary Toggle user status
- * @tags User-Admin
- * @security bearerAuth
- * @param id path string
- * @body { isActive: boolean }
- * @response 200 - Status updated
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     summary: Update user (general admin update)
+ *     description: Admin can update user profile fields, role, status.
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 100
+ *               phone:
+ *                 type: string
+ *                 pattern: '^[0-9]{10,15}$'
+ *               bio:
+ *                 type: string
+ *                 maxLength: 500
+ *               avatar:
+ *                 type: string
+ *                 format: uri
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin, moderator]
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
+router.put(
+  '/:id',
+  requireRole('admin', 'super_admin'),
+  validate({
+    params: Joi.object({ id: commonSchemas.id }),
+    body: Joi.object({
+      name: Joi.string().min(2).max(100).optional(),
+      phone: Joi.string()
+        .pattern(/^[0-9]{10,15}$/)
+        .optional(),
+      bio: Joi.string().max(500).optional(),
+      avatar: Joi.string().uri().optional(),
+      role: Joi.string().valid('user', 'admin', 'moderator').optional(),
+      isActive: Joi.boolean().optional(),
+    }).min(1),
+  }),
+  UserController.updateUser
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/status:
+ *   put:
+ *     summary: Toggle user status
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isActive:
+ *                 type: boolean
+ *             required:
+ *               - isActive
+ *     responses:
+ *       200:
+ *         description: Status updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
 router.put(
   '/:id/status',
   requireRole('admin', 'super_admin'),
   validate({
-    params: userIdParamSchema,
+    params: Joi.object({ id: commonSchemas.id }),
     body: Joi.object({
       isActive: Joi.boolean().required(),
     }),
@@ -177,44 +437,126 @@ router.put(
 );
 
 /**
- * @summary Get user activity logs
- * @description Admin view user audit logs.
- * @tags User-Admin
- * @security bearerAuth
- * @param id path string.required
- * @query paginationSchema
- * @response 200 - Activity logs
+ * @swagger
+ * /api/users/{id}/activity:
+ *   get:
+ *     summary: Get user activity logs
+ *     description: Admin view user audit logs.
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           default: createdAt
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *     responses:
+ *       200:
+ *         description: Activity logs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedResponse'
  */
 router.get(
   '/:id/activity',
   requireRole('admin', 'super_admin'),
   validate({
-    params: userIdParamSchema,
+    params: Joi.object({ id: commonSchemas.id }),
     query: paginationSchema.query,
   }),
   UserController.getUserActivity
 );
 
 /**
- * @summary Delete user
- * @tags User-Admin
- * @security bearerAuth
- * @param id path string
- * @response 200 - Deleted
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     summary: Delete user
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deleted
+ *       404:
+ *         description: User not found
  */
 router.delete(
   '/:id',
   requireRole('super_admin'),
-  validate(userIdParamSchema),
+  validate({ params: Joi.object({ id: commonSchemas.id }) }),
   UserController.deleteUser
 );
 
 /**
- * @summary Bulk delete users
- * @tags User-Admin
- * @security bearerAuth
- * @body { userIds: array }
- * @response 200 - Count deleted
+ * @swagger
+ * /api/users/bulk-delete:
+ *   post:
+ *     summary: Bulk delete users
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 minItems: 1
+ *             required:
+ *               - userIds
+ *     responses:
+ *       200:
+ *         description: Count deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     deletedCount:
+ *                       type: number
  */
 router.post(
   '/bulk-delete',
@@ -228,11 +570,32 @@ router.post(
 );
 
 /**
- * @summary Export users
- * @tags User-Admin
- * @security bearerAuth
- * @query { format: 'csv'|'json' }
- * @response 200 - Export data/stream
+ * @swagger
+ * /api/users/export:
+ *   get:
+ *     summary: Export users
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [csv, json]
+ *           default: csv
+ *     responses:
+ *       200:
+ *         description: Export data/stream
+ *         content:
+ *           application/csv:
+ *             schema:
+ *               type: string
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  */
 router.get(
   '/export',
@@ -242,10 +605,34 @@ router.get(
 );
 
 /**
- * @summary Get user statistics
- * @tags User-Admin
- * @security bearerAuth
- * @response 200 - Stats (counts, growth)
+ * @swagger
+ * /api/users/stats:
+ *   get:
+ *     summary: Get user statistics
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats (counts, growth)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: number
+ *                     activeUsers:
+ *                       type: number
+ *                     newUsersThisMonth:
+ *                       type: number
+ *                     userGrowth:
+ *                       type: number
  */
 router.get('/stats', requireRole('admin', 'super_admin'), UserController.getUserStats);
 

@@ -1,8 +1,6 @@
 import { Router, Response } from 'express';
 import { asyncHandler } from '@/utils/asyncHandler';
-import { cacheService } from '@/services/cacheService';
 import config from '@/config/env';
-import { LoggerService } from '@/utils/logger';
 
 const router = Router();
 
@@ -13,10 +11,25 @@ const checkQueue = async () => true;
 const getCacheStats = () => ({ hits: 0, misses: 0, connected: true });
 
 /**
- * @summary Basic health check
- * @description Simple OK response for load balancers.
- * @tags Monitoring
- * @response 200 - OK
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Basic health check
+ *     description: Simple OK response for load balancers.
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
  */
 router.get(
   '/health',
@@ -26,11 +39,17 @@ router.get(
 );
 
 /**
- * @summary Detailed health check
- * @description Full system health with services status.
- * @tags Monitoring
- * @response 200 - Health report
- * @response 503 - Degraded
+ * @swagger
+ * /health/detailed:
+ *   get:
+ *     summary: Detailed health check
+ *     description: Full system health with services status.
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Health report
+ *       503:
+ *         description: Degraded
  */
 router.get(
   '/health/detailed',
@@ -55,10 +74,18 @@ router.get(
 );
 
 /**
- * @summary Prometheus metrics
- * @tags Monitoring
- * @produce text/plain
- * @response 200 - Metrics
+ * @swagger
+ * /metrics:
+ *   get:
+ *     summary: Prometheus metrics
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Metrics
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
  */
 router.get(
   '/metrics',
@@ -79,9 +106,14 @@ node_memory_usage_bytes{type="external"} ${process.memoryUsage().external}
 );
 
 /**
- * @summary Readiness probe
- * @tags Monitoring
- * @response 200 - Ready
+ * @swagger
+ * /ready:
+ *   get:
+ *     summary: Readiness probe
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Ready
  */
 router.get(
   '/ready',
@@ -91,9 +123,14 @@ router.get(
 );
 
 /**
- * @summary Liveness probe
- * @tags Monitoring
- * @response 200 - Live
+ * @swagger
+ * /live:
+ *   get:
+ *     summary: Liveness probe
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Live
  */
 router.get(
   '/live',
@@ -103,9 +140,16 @@ router.get(
 );
 
 /**
- * @summary Redis status
- * @tags Monitoring
- * @response 200 - Redis OK
+ * @swagger
+ * /api/monitoring/redis:
+ *   get:
+ *     summary: Redis status
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Redis OK
+ *       503:
+ *         description: Redis error
  */
 router.get(
   '/redis',
@@ -116,9 +160,16 @@ router.get(
 );
 
 /**
- * @summary MongoDB status
- * @tags Monitoring
- * @response 200 - MongoDB OK
+ * @swagger
+ * /api/monitoring/mongodb:
+ *   get:
+ *     summary: MongoDB status
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: MongoDB OK
+ *       503:
+ *         description: MongoDB error
  */
 router.get(
   '/mongodb',
@@ -129,9 +180,16 @@ router.get(
 );
 
 /**
- * @summary Queue status
- * @tags Monitoring
- * @response 200 - Queue OK
+ * @swagger
+ * /api/monitoring/queue:
+ *   get:
+ *     summary: Queue status
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Queue OK
+ *       503:
+ *         description: Queue error
  */
 router.get(
   '/queue',
@@ -142,9 +200,25 @@ router.get(
 );
 
 /**
- * @summary Cache statistics
- * @tags Monitoring
- * @response 200 - Cache stats
+ * @swagger
+ * /api/monitoring/cache-stats:
+ *   get:
+ *     summary: Cache statistics
+ *     tags: [Monitoring]
+ *     responses:
+ *       200:
+ *         description: Cache stats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 hits:
+ *                   type: number
+ *                 misses:
+ *                   type: number
+ *                 connected:
+ *                   type: boolean
  */
 router.get(
   '/cache-stats',

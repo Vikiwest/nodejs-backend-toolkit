@@ -16,7 +16,7 @@ export class DatabaseConnection {
 
   async connect(): Promise<void> {
     try {
-      await mongoose.connect(config.mongodb.uri, config.mongodb.options);
+      await mongoose.connect(config.mongodb.uri);
       LoggerService.info('MongoDB connected successfully');
 
       mongoose.connection.on('error', (error) => {

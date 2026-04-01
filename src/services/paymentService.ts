@@ -34,7 +34,7 @@ export class PaymentService {
           email,
           metadata: metadata || {},
           channels: ['card', 'bank_transfer', 'ussd', 'qr'],
-          callback_url: `${process.env.APP_URL || 'http://localhost:3000'}/payment/callback`,
+          callback_url: `${process.env.APP_URL || 'http://localhost:3002'}/payment/callback`,
           reference: 'ref_' + Math.random().toString(36).substr(2, 9),
         }, (error: any, body: any) => {
           if (error) reject(error);

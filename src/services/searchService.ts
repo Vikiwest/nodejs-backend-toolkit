@@ -11,7 +11,7 @@ interface SearchOptions {
 }
 
 export class SearchService {
-  private client: Client;
+  private client!: Client;
 
   constructor() {
     if (process.env.ELASTICSEARCH_URL) {
@@ -42,9 +42,9 @@ export class SearchService {
     }
   }
 
-async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: number }> {
+  async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: number }> {
     const must = [];
-    
+
     if (query) {
       must.push({
         multi_match: {
@@ -54,15 +54,15 @@ async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: 
         },
       });
     }
-    
+
     if (filters?.role) {
       must.push({ term: { role: filters.role } });
     }
-    
+
     if (filters?.isActive !== undefined) {
       must.push({ term: { isActive: filters.isActive } });
     }
-    
+
     const result = await this.client.search({
       index: 'users',
       body: {
@@ -85,17 +85,18 @@ async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: 
         },
       },
     });
-    
+
     return {
-      items: result.hits.hits.map(hit => hit._source),
-      total: typeof result.hits.total === 'number' ? result.hits.total : result.hits.total?.value || 0,
+      items: result.hits.hits.map((hit) => hit._source),
+      total:
+        typeof result.hits.total === 'number' ? result.hits.total : result.hits.total?.value || 0,
     };
   }
 
-async reindexAll() {
+  async reindexAll() {
     const UserModel = (await import('../models/user.model')).UserModel;
     const users = await UserModel.find({ isDeleted: false });
-    const operations = users.flatMap(user => [
+    const operations = users.flatMap((user) => [
       { index: { _index: 'users', _id: user._id.toString() } },
       {
         id: user._id,
@@ -108,11 +109,11 @@ async reindexAll() {
         },
       },
     ]);
-    
+
     await this.client.bulk({ body: operations });
   }
 
-async search<T>(options: SearchOptions): Promise<{ items: T[]; total: number }> {
+  async search<T>(options: SearchOptions): Promise<{ items: T[]; total: number }> {
     if (!this.client) {
       return { items: [], total: 0 };
     }
@@ -142,8 +143,9 @@ async search<T>(options: SearchOptions): Promise<{ items: T[]; total: number }> 
         },
       });
 
-      const items = result.hits.hits.map(hit => hit._source as T);
-      const total = typeof result.hits.total === 'number' ? result.hits.total : result.hits.total?.value || 0;
+      const items = result.hits.hits.map((hit) => hit._source as T);
+      const total =
+        typeof result.hits.total === 'number' ? result.hits.total : result.hits.total?.value || 0;
 
       return { items, total };
     } catch (error) {

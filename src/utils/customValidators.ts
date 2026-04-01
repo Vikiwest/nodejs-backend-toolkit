@@ -26,7 +26,7 @@ export const customValidators = {
   // Email with Nigerian domains
   ngEmail: Joi.string()
     .email()
-    .domain('gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com')
+    .domain({ tlds: { allow: ['com'] } })
     .message('Invalid Nigerian email'),
 };
 

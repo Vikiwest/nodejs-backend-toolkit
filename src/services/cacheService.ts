@@ -107,7 +107,7 @@ export class CacheService implements ICacheService {
 
   async disconnect(): Promise<void> {
     this.cache.clear();
-    logger.info('In-memory cache cleared');
+    LoggerService.info('In-memory cache cleared');
   }
 }
 

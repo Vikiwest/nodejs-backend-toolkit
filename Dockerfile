@@ -21,6 +21,6 @@ COPY --from=builder /app/node_modules ./node_modules
 
 RUN npm ci --only=production
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["node", "dist/server.js"]

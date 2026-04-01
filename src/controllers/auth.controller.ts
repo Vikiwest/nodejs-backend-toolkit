@@ -2,33 +2,20 @@
  * @swagger
  * components:
  *   schemas:
- *     AuthResponse:
+ *     TwoFASecretResponse:
  *       type: object
  *       properties:
- *         user:
- *           $ref: '#/components/schemas/User'
- *         tokens:
- *           type: object
- *           properties:
- *             accessToken:
- *               type: string
- *             refreshToken:
- *               type: string
- *     TokenResponse:
- *       type: object
- *       properties:
- *         tokens:
- *           type: object
- *           properties:
- *             accessToken:
- *               type: string
- *             refreshToken:
- *               type: string
+ *         secret:
+ *           type: string
+ *           description: 2FA secret key
+ *         qrCode:
+ *           type: string
+ *           description: QR code data URL for scanning
  */
 
 import { Request, Response } from 'express';
 import { UserModel } from '@/models/user.model';
-import { JWTService } from '@/utils/jwt';
+import JWTService from '@/utils/jwt';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
 import { emailService } from '@/services/emailService';
@@ -42,7 +29,7 @@ import { AuthRequest } from '@/types';
  * /api/auth/register:
  *   post:
  *     summary: User registration
- *     tags: [Auth]
+ *     tags: [Auth-Basic]
  *     requestBody:
  *       required: true
  *       content:
@@ -68,6 +55,18 @@ import { AuthRequest } from '@/types';
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
+ *       409:
+ *         description: Conflict
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 export class AuthController {
   static register = asyncHandler(async (req: Request, res: Response) => {
@@ -90,7 +89,11 @@ export class AuthController {
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    ApiResponseUtil.created(res, { user: userResponse, tokens }, 'Registration successful. Please verify your email.');
+    ApiResponseUtil.created(
+      res,
+      { user: userResponse, tokens },
+      'Registration successful. Please verify your email.'
+    );
   });
 
   /**
@@ -98,7 +101,7 @@ export class AuthController {
    * /api/auth/login:
    *   post:
    *     summary: User login
-   *     tags: [Auth]
+   *     tags: [Auth-Basic]
    *     requestBody:
    *       required: true
    *       content:
@@ -106,6 +109,13 @@ export class AuthController {
    *           schema:
    *             type: object
    *             required: [email, password]
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *               password:
+   *                 type: string
+   *                 minLength: 6
    *     responses:
    *       200:
    *         description: Login successful
@@ -113,6 +123,18 @@ export class AuthController {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/AuthResponse'
+   *       401:
+   *         description: Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Account disabled
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static login = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -141,6 +163,28 @@ export class AuthController {
     ApiResponseUtil.success(res, { user: userResponse, tokens });
   });
 
+  /**
+   * @swagger
+   * /api/auth/logout:
+   *   post:
+   *     summary: User logout
+   *     tags: [Auth-Basic]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Logout successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static logout = asyncHandler(async (_req: AuthRequest, res: Response) => {
     ApiResponseUtil.success(res, null, 'Logged out successfully');
   });
@@ -150,7 +194,7 @@ export class AuthController {
    * /api/auth/refresh-token:
    *   post:
    *     summary: Refresh JWT token
-   *     tags: [Auth]
+   *     tags: [Auth-Basic]
    *     requestBody:
    *       required: true
    *       content:
@@ -158,6 +202,9 @@ export class AuthController {
    *           schema:
    *             type: object
    *             required: [refreshToken]
+   *             properties:
+   *               refreshToken:
+   *                 type: string
    *     responses:
    *       200:
    *         description: Token refreshed
@@ -165,6 +212,12 @@ export class AuthController {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/TokenResponse'
+   *       401:
+   *         description: Invalid refresh token
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   static refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
@@ -179,6 +232,38 @@ export class AuthController {
     ApiResponseUtil.success(res, { tokens });
   });
 
+  /**
+   * @swagger
+   * /api/auth/verify-email/{token}:
+   *   post:
+   *     summary: Verify email address
+   *     tags: [Auth-Verification]
+   *     parameters:
+   *       - in: path
+   *         name: token
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Email verified
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Invalid token
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { token } = req.params;
 
@@ -200,6 +285,43 @@ export class AuthController {
     ApiResponseUtil.success(res, null, 'Email verified successfully');
   });
 
+  /**
+   * @swagger
+   * /api/auth/resend-verification:
+   *   post:
+   *     summary: Resend verification email
+   *     tags: [Auth-Verification]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [email]
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *     responses:
+   *       200:
+   *         description: Verification email sent
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Already verified
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static resendVerification = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
 
@@ -220,6 +342,31 @@ export class AuthController {
     ApiResponseUtil.success(res, null, 'Verification email resent');
   });
 
+  /**
+   * @swagger
+   * /api/auth/forgot-password:
+   *   post:
+   *     summary: Request password reset
+   *     tags: [Auth-Password]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [email]
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *     responses:
+   *       200:
+   *         description: Reset email sent
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   */
   static forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
 
@@ -236,6 +383,45 @@ export class AuthController {
     ApiResponseUtil.success(res, null, 'Password reset email sent');
   });
 
+  /**
+   * @swagger
+   * /api/auth/reset-password:
+   *   post:
+   *     summary: Reset password with token
+   *     tags: [Auth-Password]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [token, newPassword]
+   *             properties:
+   *               token:
+   *                 type: string
+   *               newPassword:
+   *                 type: string
+   *                 minLength: 6
+   *     responses:
+   *       200:
+   *         description: Password reset successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Invalid token
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static resetPassword = asyncHandler(async (req: Request, res: Response) => {
     const { token, newPassword } = req.body;
 
@@ -257,6 +443,48 @@ export class AuthController {
     ApiResponseUtil.success(res, null, 'Password reset successful');
   });
 
+  /**
+   * @swagger
+   * /api/auth/change-password:
+   *   post:
+   *     summary: Change password (authenticated)
+   *     tags: [Auth-Password]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [currentPassword, newPassword]
+   *             properties:
+   *               currentPassword:
+   *                 type: string
+   *                 minLength: 6
+   *               newPassword:
+   *                 type: string
+   *                 minLength: 6
+   *     responses:
+   *       200:
+   *         description: Password changed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       401:
+   *         description: Invalid current password
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       404:
+   *         description: User not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.user!.id;
@@ -276,6 +504,28 @@ export class AuthController {
     ApiResponseUtil.success(res, null, 'Password changed successfully');
   });
 
+  /**
+   * @swagger
+   * /api/auth/enable-2fa:
+   *   post:
+   *     summary: Enable 2FA
+   *     tags: [Auth-2FA]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: 2FA secret and QR code
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/TwoFASecretResponse'
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // 2FA Endpoints
   static enable2FA = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
@@ -284,6 +534,40 @@ export class AuthController {
     ApiResponseUtil.success(res, { secret, qrCode }, '2FA enabled. Scan QR code.');
   });
 
+  /**
+   * @swagger
+   * /api/auth/verify-2fa:
+   *   post:
+   *     summary: Verify 2FA token
+   *     tags: [Auth-2FA]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [token]
+   *             properties:
+   *               token:
+   *                 type: string
+   *                 minLength: 6
+   *                 maxLength: 6
+   *     responses:
+   *       200:
+   *         description: 2FA verified
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       401:
+   *         description: Invalid 2FA token
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static verify2FA = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
     const { token } = req.body;
@@ -298,6 +582,28 @@ export class AuthController {
     ApiResponseUtil.success(res, null, '2FA verified successfully');
   });
 
+  /**
+   * @swagger
+   * /api/auth/disable-2fa:
+   *   post:
+   *     summary: Disable 2FA
+   *     tags: [Auth-2FA]
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: 2FA disabled
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       401:
+   *         description: Unauthorized
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   static disable2FA = asyncHandler(async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
@@ -306,4 +612,3 @@ export class AuthController {
     ApiResponseUtil.success(res, null, '2FA disabled');
   });
 }
-

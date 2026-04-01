@@ -2,8 +2,11 @@ import crypto from 'crypto';
 import { config } from '@/config/env';
 
 class EncryptionService {
+  private readonly algorithm = 'aes-256-cbc';
+  private readonly key: Buffer;
+  private readonly iv: Buffer;
+
   constructor() {
-    this.algorithm = 'aes-256-cbc';
     this.key = config.encryption.key
       ? Buffer.from(config.encryption.key, 'utf-8')
       : Buffer.from('default32bytekeyhere123456789012', 'utf-8');
@@ -15,7 +18,7 @@ class EncryptionService {
   /**
    * Encrypt text
    */
-  encrypt(text) {
+  encrypt(text: string): string {
     const cipher = crypto.createCipheriv(this.algorithm, this.key, this.iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -25,7 +28,7 @@ class EncryptionService {
   /**
    * Decrypt text
    */
-  decrypt(encryptedText) {
+  decrypt(encryptedText: string): string {
     const decipher = crypto.createDecipheriv(this.algorithm, this.key, this.iv);
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
@@ -35,8 +38,8 @@ class EncryptionService {
   /**
    * Hash password with bcrypt
    */
-  async hashPassword(password) {
-    const bcrypt = require('bcryptjs');
+  async hashPassword(password: string): Promise<string> {
+    const bcrypt = await import('bcryptjs');
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
   }
@@ -44,17 +47,18 @@ class EncryptionService {
   /**
    * Compare password with hash
    */
-  async comparePassword(password, hash) {
-    const bcrypt = require('bcryptjs');
+  async comparePassword(password: string, hash: string): Promise<boolean> {
+    const bcrypt = await import('bcryptjs');
     return await bcrypt.compare(password, hash);
   }
 
   /**
    * Generate random token
    */
-  generateRandomToken(length = 32) {
+  generateRandomToken(length: number = 32): string {
     return crypto.randomBytes(length).toString('hex');
   }
 }
 
-export const EncryptionService = new EncryptionService();
+// Create and export a singleton instance
+export default new EncryptionService();

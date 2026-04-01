@@ -22,6 +22,13 @@ const options = {
     ],
     tags: [
       { name: 'Auth', description: 'Authentication and user management endpoints' },
+      {
+        name: 'Auth-Basic',
+        description: 'Basic authentication operations (register, login, logout, refresh)',
+      },
+      { name: 'Auth-Verification', description: 'Email verification endpoints' },
+      { name: 'Auth-Password', description: 'Password management endpoints' },
+      { name: 'Auth-2FA', description: 'Two-factor authentication endpoints' },
       { name: 'User', description: 'User profile and admin management' },
       { name: 'User-Admin', description: 'Admin-only user operations' },
       { name: 'Upload', description: 'File upload and management' },
@@ -56,6 +63,41 @@ const options = {
             updatedAt: { type: 'string', format: 'date-time' },
           },
           required: ['_id', 'name', 'email', 'role'],
+        },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            user: {
+              $ref: '#/components/schemas/User',
+            },
+            tokens: {
+              type: 'object',
+              properties: {
+                accessToken: {
+                  type: 'string',
+                },
+                refreshToken: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+        TokenResponse: {
+          type: 'object',
+          properties: {
+            tokens: {
+              type: 'object',
+              properties: {
+                accessToken: {
+                  type: 'string',
+                },
+                refreshToken: {
+                  type: 'string',
+                },
+              },
+            },
+          },
         },
         ErrorResponse: {
           type: 'object',
@@ -93,7 +135,7 @@ const options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+  apis: ['./src/routes/*.ts', './src/controllers/*.controller.ts'],
 };
 
 export const specs = swaggerJsdoc(options as any);

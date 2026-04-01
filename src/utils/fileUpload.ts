@@ -20,12 +20,13 @@ const localStorage = multer.diskStorage({
 let s3Client: S3Client | null = null;
 let s3Storage: any = null;
 
-if (config.aws.accessKeyId && config.aws.s3Bucket) {
+// Check if all required AWS credentials are present
+if (config.aws.accessKeyId && config.aws.secretAccessKey && config.aws.s3Bucket) {
   s3Client = new S3Client({
     region: config.aws.region,
     credentials: {
       accessKeyId: config.aws.accessKeyId,
-      secretAccessKey: config.aws.secretAccessKey,
+      secretAccessKey: config.aws.secretAccessKey, // Now TypeScript knows this is defined
     },
   });
 
@@ -54,7 +55,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 
 // Create multer instance
 export const upload = multer({
-  storage: config.aws.s3Bucket ? s3Storage : localStorage,
+  storage: config.aws.s3Bucket && config.aws.accessKeyId && config.aws.secretAccessKey ? s3Storage : localStorage,
   limits: {
     fileSize: config.upload.maxSize,
   },

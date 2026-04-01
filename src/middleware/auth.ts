@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { JWTService } from '@/utils/jwt';
+import JWTService from '@/utils/jwt';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
 import { AuthRequest, UserRole } from '@/types';
@@ -10,8 +10,8 @@ interface AuthOptions {
 }
 
 export const authMiddleware = (options: AuthOptions = { required: true }) => {
-  return asyncHandler(async (req: AuthRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+  return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       if (options.required) {
@@ -32,7 +32,7 @@ export const authMiddleware = (options: AuthOptions = { required: true }) => {
 
       // Check role authorization
       if (options.roles && options.roles.length > 0) {
-        if (!options.roles.includes(req.user.role)) {
+        if (!options.roles.includes(req.user.role as UserRole)) {
           return ApiResponseUtil.forbidden(res, 'Insufficient permissions');
         }
       }
@@ -48,12 +48,12 @@ export const authMiddleware = (options: AuthOptions = { required: true }) => {
 };
 
 export const requireRole = (...roles: UserRole[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return ApiResponseUtil.unauthorized(res, 'User not authenticated');
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role as UserRole)) {
       return ApiResponseUtil.forbidden(res, 'Access denied. Insufficient permissions.');
     }
 
@@ -62,7 +62,7 @@ export const requireRole = (...roles: UserRole[]) => {
 };
 
 export const requirePermission = (resource: string, action: string) => {
-  return asyncHandler(async (req: AuthRequest, res: Response, next: NextFunction) => {
+  return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     // Implement permission checking logic here
     // This could check against a permissions system or RBAC
     next();

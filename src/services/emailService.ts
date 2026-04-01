@@ -98,7 +98,7 @@ export class EmailService {
               <li>Connect with other users</li>
             </ul>
             <p>
-              <a href="${process.env.APP_URL || 'http://localhost:3000'}/dashboard" class="button">Go to Dashboard</a>
+              <a href="${process.env.APP_URL || 'http://localhost:3002'}/dashboard" class="button">Go to Dashboard</a>
             </p>
           </div>
           <div class="footer">
@@ -114,7 +114,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string): Promise<boolean> {
-    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3002'}/reset-password?token=${token}`;
     const subject = 'Password Reset Request';
     const html = `
       <!DOCTYPE html>
@@ -157,7 +157,7 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, token: string): Promise<boolean> {
-    const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/verify-email?token=${token}`;
+    const verifyUrl = `${process.env.APP_URL || 'http://localhost:3002'}/verify-email?token=${token}`;
     const subject = 'Verify Your Email Address';
     const html = `
       <!DOCTYPE html>

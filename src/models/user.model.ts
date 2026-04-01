@@ -1,6 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IUser } from '@/types';
-import { encryptionService } from '@/utils/encryption';
+import encryptionService from '@/utils/encryption';
 
 const userSchema = new Schema<IUser>(
   {
@@ -40,6 +40,16 @@ const userSchema = new Schema<IUser>(
     },
     lastLogin: {
       type: Date,
+    },
+    // Add 2FA fields
+    twoFactorSecret: {
+      type: String,
+      select: false, // Don't return by default for security
+      default: null,
+    },
+    isTwoFactorEnabled: {
+      type: Boolean,
+      default: false,
     },
   },
   {

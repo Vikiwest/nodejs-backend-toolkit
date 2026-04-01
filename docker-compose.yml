@@ -71,7 +71,7 @@ services:
     container_name: toolkit-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3002:3002"
       - "9229:9229" # Debug
     environment:
       NODE_ENV: ${NODE_ENV:-production}
@@ -134,7 +134,7 @@ volumes:
     container_name: toolkit-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3002:3002"
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://admin:password123@mongodb:27017/toolkit?authSource=admin

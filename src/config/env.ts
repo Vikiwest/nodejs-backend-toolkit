@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3002,
   nodeEnv: process.env.NODE_ENV || 'development',
   appName: process.env.APP_NAME || 'BackendToolkit',
   isProduction: () => process.env.NODE_ENV === 'production',
@@ -63,7 +63,14 @@ export const config = {
     key: process.env.ENCRYPTION_KEY,
     iv: process.env.ENCRYPTION_IV,
   },
-};
+  // Add AWS configuration
+  aws: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION || 'us-east-1',
+    s3Bucket: process.env.AWS_S3_BUCKET,
+  },
+}as const;
 
 // Validate required config
 if (!config.jwt.secret && config.nodeEnv === 'production') {

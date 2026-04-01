@@ -218,6 +218,46 @@ export class UserController {
     ApiResponseUtil.success(res, user, 'User role updated successfully');
   });
 
+  static updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { id } = req.params as any;
+    const updates = req.body as any;
+
+    // Admin can update most fields, but not password/email (use specific endpoints)
+    const allowedUpdates = ['name', 'phone', 'bio', 'avatar', 'role', 'isActive'];
+    const validUpdates = Object.keys(updates).filter((key) => allowedUpdates.includes(key));
+
+    if (validUpdates.length === 0) {
+      return ApiResponseUtil.badRequest(res, 'No valid fields to update');
+    }
+
+    const updateData = validUpdates.reduce((acc, key) => {
+      acc[key] = updates[key];
+      return acc;
+    }, {} as any);
+
+    const user = await UserModel.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
+    if (!user) {
+      return ApiResponseUtil.notFound(res, 'User not found');
+    }
+
+    await cacheService.del(`user:profile:${id}`);
+
+    await auditService.log({
+      userId: req.user!.id,
+      action: 'UPDATE_USER',
+      resource: 'User',
+      resourceId: id,
+      changes: updateData,
+      req,
+    });
+
+    ApiResponseUtil.success(res, user, 'User updated successfully');
+  });
+
   static toggleUserStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { id } = req.params as any;
     const { isActive } = req.body as any;

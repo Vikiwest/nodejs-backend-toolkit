@@ -102,6 +102,35 @@ export class App {
     // Swagger docs
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
+    // Root landing page for project and docs
+    this.app.get('/', (req: Request, res: Response) => {
+      res.send(`
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Node.js Backend Toolkit</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f8; }
+              .container { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); max-width: 720px; width: 100%; }
+              h1 { margin-top: 0; }
+              .btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.25rem; color: #fff; background: #007bff; border: none; border-radius: 8px; text-decoration: none; }
+              .btn:hover { background: #0056b3; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Node.js Backend Toolkit</h1>
+              <p>API server is running. Use the Swagger UI to explore all endpoints and schemas.</p>
+              <p><a class="btn" href="/api-docs" target="_blank">Open Swagger UI</a></p>
+              <p>Health check: <code>/health</code></p>
+            </div>
+          </body>
+        </html>
+      `);
+    });
+
     // Metrics endpoint
     this.app.get('/metrics', metricsEndpoint);
 
