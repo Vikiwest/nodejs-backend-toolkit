@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import hpp from 'hpp';
+import mongoose from 'mongoose';
 import config from './config/env';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
@@ -17,6 +18,7 @@ import { securityHeaders } from './middleware/securityHeaders';
 import { specs } from './config/swagger';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
+import { cacheService } from './services/cacheService';
 import { websocketService } from './services/websocketService';
 import { EmailJobs } from './jobs/email.job';
 import { CleanupJobs } from './jobs/cleanup.job';
@@ -86,10 +88,6 @@ export class App {
     this.app.use('/api/admin', createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
 
     this.app.use(securityHeaders);
-
-    // Session management (optional) - RedisStore constructor issue fixed by disabling\n    // if (config.redis.host) {\n    //   const redisClient = createClient({\n    //     socket: {\n    //       host: config.redis.host,\n    //       port: config.redis.port,\n    //     },\n    //     password: config.redis.password,\n    //   });\n    //   \n    //   redisClient.connect().catch(console.error);\n    //   \n    //   this.app.use(session({\n    //     store: new RedisStore({ client: redisClient }),\n    //     secret: config.jwt.secret,\n    //     resave: false,\n    //     saveUninitialized: false,\n    //     cookie: {\n    //       secure: config.isProduction(),\n    //       httpOnly: true,\n    //       maxAge: 1000 * 60 * 60 * 24, // 1 day\n    //     },\n    //   }));\n    // }
-
-    // Health check endpoint with Redis check
   }
 
   private setupRoutes(): void {
@@ -99,36 +97,85 @@ export class App {
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
     // Root landing page for project and docs
-    this.app.get('/', (req: Request, res: Response) => {
+    this.app.get('/', (_req: Request, res: Response) => {
       res.send(`
-        <!doctype html>
-        <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Node.js Backend Toolkit</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f4f6f8; }
-              .container { background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); max-width: 720px; width: 100%; }
-              h1 { margin-top: 0; }
-              .btn { display: inline-block; margin-top: 1rem; padding: 0.75rem 1.25rem; color: #fff; background: #007bff; border: none; border-radius: 8px; text-decoration: none; }
-              .btn:hover { background: #0056b3; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Node.js Backend Toolkit</h1>
-              <p>API server is running. Use the Swagger UI to explore all endpoints and schemas.</p>
-              <p><a class="btn" href="/api-docs" target="_blank">Open Swagger UI</a></p>
-              <p>Health check: <code>/health</code></p>
-            </div>
-          </body>
-        </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🚀 Node.js Backend Toolkit</title>
+  <style>
+    body { text-align: center; padding: 50px; font-family: Arial, sans-serif; }
+    h1 { color: #3b82f6; }
+    .links { margin: 20px 0; }
+    .links a { margin: 0 10px; text-decoration: none; color: #3b82f6; }
+  </style>
+</head>
+<body>
+  <h1>🚀 Node.js Backend Toolkit</h1>
+  <p>Production-ready API server with authentication, payments, real-time notifications, monitoring, and much more.</p>
+  <div class="links">
+    <a href="/api-docs">📚 API Docs</a> |
+    <a href="/health">✅ Health Check</a> |
+    <a href="/metrics">📊 Metrics</a>
+  </div>
+</body>
+</html>
       `);
     });
 
     // Metrics endpoint
     this.app.get('/metrics', metricsEndpoint);
+
+    // Health check endpoint
+    this.app.get('/health', async (req: Request, res: Response) => {
+      try {
+        // Check database connectivity
+        const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+
+        // Check cache service
+        const cacheStatus = (await cacheService.set('health_check', 'OK', 10))
+          ? 'operational'
+          : 'failed';
+
+        // Check memory usage
+        const memUsage = process.memoryUsage();
+        const memoryMB = {
+          rss: Math.round(memUsage.rss / 1024 / 1024),
+          heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+          heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+          external: Math.round(memUsage.external / 1024 / 1024),
+        };
+
+        const healthData = {
+          success: true,
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          environment: config.nodeEnv,
+          version: process.version,
+          services: {
+            database: dbStatus,
+            cache: cacheStatus,
+          },
+          memory: memoryMB,
+          system: {
+            platform: process.platform,
+            arch: process.arch,
+            nodeVersion: process.version,
+          },
+        };
+
+        res.status(200).json(healthData);
+      } catch (error) {
+        logger.error('Health check failed', error as Error);
+        res.status(503).json({
+          success: false,
+          status: 'unhealthy',
+          timestamp: new Date().toISOString(),
+          error: 'Service unavailable',
+        });
+      }
+    });
 
     // GraphQL endpoint (placeholder for now)
     // this.app.use('/graphql', graphqlHandler);
