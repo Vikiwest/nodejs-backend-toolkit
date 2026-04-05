@@ -9,10 +9,7 @@ export const config = {
   isProduction: () => process.env.NODE_ENV === 'production',
   isTest: () => process.env.NODE_ENV === 'test',
   mongodb: {
-    uri:
-      process.env.NODE_ENV === 'production'
-        ? process.env.MONGODB_URI_PROD
-        : process.env.MONGODB_URI,
+    uri: process.env.MONGODB_URI,
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,

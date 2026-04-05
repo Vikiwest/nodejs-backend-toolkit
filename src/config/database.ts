@@ -18,7 +18,7 @@ export class DatabaseConnection {
     try {
       // Validate MongoDB URI is configured
       if (!config.mongodb.uri) {
-        const errorMsg = `MongoDB URI not configured. Expected ${config.isProduction() ? 'MONGODB_URI_PROD' : 'MONGODB_URI'} environment variable`;
+        const errorMsg = 'MongoDB URI not configured. Set MONGODB_URI environment variable';
         LoggerService.error(errorMsg);
         throw new Error(errorMsg);
       }

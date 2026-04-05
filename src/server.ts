@@ -113,7 +113,22 @@ process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
 
 // Start the server
 const server = new Server();
-server.start().catch((error) => {
-  logger.error('Server startup failed', error);
+
+// Safety timeout - exit if server doesn't start within 30 seconds
+const startupTimeout = setTimeout(() => {
+  logger.error('Server startup timeout - MongoDB connection or initialization took too long');
   process.exit(1);
-});
+}, 30000);
+
+server
+  .start()
+  .then(() => {
+    clearTimeout(startupTimeout);
+    logger.info('Server started successfully');
+  })
+  .catch((error) => {
+    clearTimeout(startupTimeout);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    logger.error(`Server startup failed: ${errorMsg}`, error);
+    process.exit(1);
+  });
