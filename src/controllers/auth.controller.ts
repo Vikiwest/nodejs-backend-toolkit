@@ -14,15 +14,15 @@
  */
 
 import { Request, Response } from 'express';
-import { UserModel } from '@/models/user.model';
-import JWTService from '@/utils/jwt';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { emailService } from '@/services/emailService';
-import { cacheService } from '@/services/cacheService';
-import encryptionService from '@/utils/encryption';
-import { twoFactorService } from '@/services/twoFactorService';
-import { AuthRequest } from '@/types';
+import { UserModel } from '../models/user.model';
+import JWTService from '../utils/jwt';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { emailService } from '../services/emailService';
+import { cacheService } from '../services/cacheService';
+import encryptionService from '../utils/encryption';
+import { twoFactorService } from '../services/twoFactorService';
+import { AuthRequest } from '../types';
 
 /**
  * @swagger

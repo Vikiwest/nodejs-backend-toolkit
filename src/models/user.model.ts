@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
-import { IUser } from '@/types';
-import encryptionService from '@/utils/encryption';
+import { IUser } from '../types';
+import encryptionService from '../utils/encryption';
 
 const userSchema = new Schema<IUser>(
   {

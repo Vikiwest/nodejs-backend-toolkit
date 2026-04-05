@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
-import { ApiResponseUtil } from '@/utils/apiResponse';
+import { ApiResponseUtil } from '../utils/apiResponse';
 
 type ValidationSchema = {
   body?: Joi.ObjectSchema;

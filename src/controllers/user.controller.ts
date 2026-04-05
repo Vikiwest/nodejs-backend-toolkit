@@ -1,11 +1,11 @@
 import { Response } from 'express';
-import { AuthRequest } from '@/types';
-import { UserModel } from '@/models/user.model';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { cacheService } from '@/services/cacheService';
-import { auditService } from '@/services/auditService';
-import { ExportService } from '@/services/exportService';
+import { AuthRequest } from '../types';
+import { UserModel } from '../models/user.model';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { cacheService } from '../services/cacheService';
+import { auditService } from '../services/auditService';
+import { ExportService } from '../services/exportService';
 
 export class UserController {
   static getProfile = asyncHandler(async (req: AuthRequest, res: Response) => {

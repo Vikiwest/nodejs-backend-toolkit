@@ -1,8 +1,8 @@
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
-import { LoggerService } from '@/utils/logger';
-import { UserModel } from '@/models/user.model';
-import { cacheService } from '@/services/cacheService';
+import { LoggerService } from '../utils/logger';
+import { UserModel } from '../models/user.model';
+import { cacheService } from '../services/cacheService';
 
 interface TwoFASecret {
   secret: string;

@@ -1,5 +1,5 @@
-import { searchService } from '@/services/searchService';
-import { UserModel } from '@/models/user.model';
+import { searchService } from '../../services/searchService';
+import { UserModel } from '../../models/user.model';
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 describe('Search Service - Unit Tests', () => {

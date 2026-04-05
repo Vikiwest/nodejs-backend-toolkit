@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import { emailService } from '@/services/emailService';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { emailService } from '../services/emailService';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
 export class EmailController {
   /**

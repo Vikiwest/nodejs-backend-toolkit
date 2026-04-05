@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import { notificationService } from '@/services/notificationService';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { notificationService } from '../services/notificationService';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
 /**
  * @swagger

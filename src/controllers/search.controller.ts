@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import { searchService } from '@/services/searchService';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { searchService } from '../services/searchService';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
 export class SearchController {
   /**

@@ -1,6 +1,6 @@
-import { queueService } from '@/services/queueService';
-import { emailService } from '@/services/emailService';
-import { LoggerService } from '@/utils/logger';
+import { queueService } from '../services/queueService';
+import { emailService } from '../services/emailService';
+import { LoggerService } from '../utils/logger';
 
 export class EmailJobs {
   static setup(): void {

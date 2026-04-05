@@ -1,5 +1,5 @@
-import config from '@/config/env';
-import { LoggerService } from '@/utils/logger';
+import config from '../config/env';
+import { LoggerService } from '../utils/logger';
 
 let Paystack: any;
 try {

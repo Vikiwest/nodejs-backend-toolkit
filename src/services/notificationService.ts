@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { emailService } from './emailService';
 import { websocketService } from './websocketService';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 
 interface Notification {
   id: string;

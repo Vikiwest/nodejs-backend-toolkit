@@ -1,5 +1,5 @@
 import twilio from 'twilio';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 
 interface SMSOptions {
   to: string;

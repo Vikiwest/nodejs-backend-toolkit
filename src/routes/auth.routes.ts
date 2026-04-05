@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import Joi from 'joi';
-import { AuthController } from '@/controllers/auth.controller';
-import { validate, commonSchemas } from '@/middleware/validation';
-import { generalLimiter } from '@/middleware/rateLimiter';
-import { authMiddleware } from '@/middleware/auth';
+import { AuthController } from '../controllers/auth.controller';
+import { validate, commonSchemas } from '../middleware/validation';
+import { generalLimiter } from '../middleware/rateLimiter';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 

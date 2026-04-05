@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { LoggerService } from '@/utils/logger';
-import { ApiResponseUtil } from '@/utils/apiResponse';
+import { LoggerService } from '../utils/logger';
+import { ApiResponseUtil } from '../utils/apiResponse';
 import mongoose from 'mongoose';
 
 export class AppError extends Error {

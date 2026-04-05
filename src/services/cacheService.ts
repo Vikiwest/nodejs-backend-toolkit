@@ -1,5 +1,5 @@
-import { LoggerService } from '@/utils/logger';
-import { CacheService as ICacheService } from '@/types';
+import { LoggerService } from '../utils/logger';
+import { CacheService as ICacheService } from '../types';
 
 interface CacheEntry {
   value: any;

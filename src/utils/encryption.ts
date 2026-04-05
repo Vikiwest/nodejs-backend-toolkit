@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { config } from '@/config/env';
+import { config } from '../config/env';
 
 class EncryptionService {
   private readonly algorithm = 'aes-256-cbc';

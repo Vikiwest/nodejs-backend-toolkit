@@ -1,4 +1,4 @@
-import { emailService } from '@/services/emailService';
+import { emailService } from '../../services/emailService';
 import { describe, it, expect } from '@jest/globals';
 
 describe('Email Service - Unit Tests', () => {

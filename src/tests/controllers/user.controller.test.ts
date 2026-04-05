@@ -1,5 +1,5 @@
-import { UserModel } from '@/models/user.model';
-import JWTService from '@/utils/jwt';
+import { UserModel } from '../../models/user.model';
+import JWTService from '../../utils/jwt';
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 describe('User Controller - Unit Tests', () => {

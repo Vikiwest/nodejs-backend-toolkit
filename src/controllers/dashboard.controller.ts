@@ -1,9 +1,9 @@
 import { Response } from 'express';
-import { UserModel } from '@/models/user.model';
-import { AuditModel } from '@/models/audit.model';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { UserModel } from '../models/user.model';
+import { AuditModel } from '../models/audit.model';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
 export class DashboardController {
   /**

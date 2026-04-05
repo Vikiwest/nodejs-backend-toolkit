@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 
 interface EmailOptions {
   to: string | string[];

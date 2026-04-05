@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import Joi from 'joi';
-import { DashboardController } from '@/controllers/dashboard.controller';
-import { authMiddleware, requireRole } from '@/middleware/auth';
-import { validate } from '@/middleware/validation';
+import { DashboardController } from '../controllers/dashboard.controller';
+import { authMiddleware, requireRole } from '../middleware/auth';
+import { validate } from '../middleware/validation';
 
 const router = Router();
 

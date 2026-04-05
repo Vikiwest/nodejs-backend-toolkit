@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
-import { asyncHandler } from '@/utils/asyncHandler';
-import config from '@/config/env';
+import { asyncHandler } from '../utils/asyncHandler';
+import config from '../config/env';
 
 const router = Router();
 

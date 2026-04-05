@@ -1,5 +1,5 @@
-import { queueService } from '@/services/queueService';
-import { LoggerService } from '@/utils/logger';
+import { queueService } from '../services/queueService';
+import { LoggerService } from '../utils/logger';
 
 export class CleanupJobs {
   static setup(): void {

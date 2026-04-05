@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
-import { cacheService } from '@/services/cacheService';
-import { auditService } from '@/services/auditService';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
+import { cacheService } from '../services/cacheService';
+import { auditService } from '../services/auditService';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -1,5 +1,5 @@
 import { Client } from '@elastic/elasticsearch';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 import { UserModel } from '../models/user.model';
 
 interface SearchOptions {

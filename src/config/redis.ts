@@ -1,6 +1,6 @@
 import { createClient, RedisClientType } from 'redis';
 import config from './env';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 
 export class RedisConnection {
   private static instance: RedisConnection;

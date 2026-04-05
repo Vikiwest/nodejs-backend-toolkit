@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { LoggerService } from '@/utils/logger';
-import { JobData } from '@/types';
+import { LoggerService } from '../utils/logger';
+import { JobData } from '../types';
 
 interface Job<T = any> {
   id: string;

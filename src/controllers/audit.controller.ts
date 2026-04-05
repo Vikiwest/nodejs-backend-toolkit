@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import { AuditModel } from '@/models/audit.model';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { AuditModel } from '../models/audit.model';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 import { Parser } from 'json2csv';
 
 export class AuditController {

@@ -1,5 +1,5 @@
-import { UserModel } from '@/models/user.model';
-import { AuditModel } from '@/models/audit.model';
+import { UserModel } from '../../models/user.model';
+import { AuditModel } from '../../models/audit.model';
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 describe('Dashboard Controller - Unit Tests', () => {

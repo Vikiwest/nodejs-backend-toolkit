@@ -1,8 +1,8 @@
 // Payment Controller Stub - Add STRIPE_SECRET_KEY to .env
 import { Request, Response } from 'express';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest } from '@/types';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
 export class PaymentController {
   static createIntent = asyncHandler(async (req: AuthRequest, res: Response) => {

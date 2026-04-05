@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import Joi from 'joi';
-import { PaymentController } from '@/controllers/payment.controller';
-import { authMiddleware } from '@/middleware/auth';
-import { validate } from '@/middleware/validation';
+import { PaymentController } from '../controllers/payment.controller';
+import { authMiddleware } from '../middleware/auth';
+import { validate } from '../middleware/validation';
 
 const router = Router();
 

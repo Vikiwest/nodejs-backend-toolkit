@@ -1,7 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import JWTService from '@/utils/jwt';
-import { LoggerService } from '@/utils/logger';
+import JWTService from '../utils/jwt';
+import { LoggerService } from '../utils/logger';
 
 interface ConnectedUser {
   socketId: string;

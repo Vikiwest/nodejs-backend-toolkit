@@ -3,7 +3,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import multerS3 from 'multer-s3';
 import path from 'path';
 import crypto from 'crypto';
-import config from '@/config/env';
+import config from '../config/env';
 
 // Local storage configuration
 const localStorage = multer.diskStorage({

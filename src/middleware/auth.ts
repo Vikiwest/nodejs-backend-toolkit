@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import JWTService from '@/utils/jwt';
-import { ApiResponseUtil } from '@/utils/apiResponse';
-import { asyncHandler } from '@/utils/asyncHandler';
-import { UserRole } from '@/types';
+import JWTService from '../utils/jwt';
+import { ApiResponseUtil } from '../utils/apiResponse';
+import { asyncHandler } from '../utils/asyncHandler';
+import { UserRole } from '../types';
 
 interface AuthOptions {
   required?: boolean;

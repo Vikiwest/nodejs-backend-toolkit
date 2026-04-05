@@ -1,6 +1,6 @@
-import { AuditModel } from '@/models/audit.model';
+import { AuditModel } from '../models/audit.model';
 import { Request } from 'express';
-import { LoggerService } from '@/utils/logger';
+import { LoggerService } from '../utils/logger';
 
 interface AuditLogData {
   userId?: string;

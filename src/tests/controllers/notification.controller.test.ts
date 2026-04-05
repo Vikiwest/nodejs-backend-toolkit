@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { notificationService } from '@/services/notificationService';
+import { notificationService } from '../../services/notificationService';
 
 describe('Notification Service - Unit Tests', () => {
   describe('Notification Service Setup', () => {
