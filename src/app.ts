@@ -763,13 +763,15 @@ export class App {
           },
         };
 
-        // Serve dashboard if requested
-        if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
+        // Serve dashboard if requested (prioritize explicit format parameter)
+        if (req.query.format === 'json') {
+          // Explicitly requested JSON
+          res.status(200).json(healthData);
+        } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
           const uptimeFormatted = formatUptime(healthData.uptime);
           const memoryUsagePercent = Math.round((memoryMB.heapUsed / memoryMB.heapTotal) * 100);
 
           res.send(`
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1261,13 +1263,21 @@ export class App {
 </html>
           `);
         } else {
-          // Return JSON response
+          // Default to JSON response
           res.status(200).json(healthData);
         }
       } catch (error) {
         logger.error('Health check failed', error as Error);
 
-        if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
+        if (req.query.format === 'json') {
+          // Explicitly requested JSON error
+          res.status(503).json({
+            success: false,
+            status: 'unhealthy',
+            timestamp: new Date().toISOString(),
+            error: 'Service unavailable',
+          });
+        } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
           res.status(503).send(`
 <!DOCTYPE html>
 <html lang="en">
