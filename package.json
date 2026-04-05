@@ -19,7 +19,7 @@
     "docker:build": "docker-compose build",
     "db:migrate": "ts-node scripts/migrate.ts",
     "db:seed": "ts-node scripts/seed.ts",
-    "clean": "if exist dist rd /s /q dist",
+    "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
     "prebuild": "npm run clean",
     "generate-client": "npx @openapitools/openapi-generator-cli generate -i ./swagger.json -g typescript-axios -o ./client",
     "backup": "ts-node scripts/backup.ts",
