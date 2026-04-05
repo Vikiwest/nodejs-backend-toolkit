@@ -193,6 +193,31 @@ export class EmailService {
 
     return this.sendEmail({ to, subject, html });
   }
+
+  async getTemplate(name: string, data: any = {}): Promise<{ subject: string; html: string }> {
+    // Simple template system
+    const templates: { [key: string]: { subject: string; html: string } } = {
+      welcome: {
+        subject: 'Welcome to BackendToolkit!',
+        html: `<h1>Welcome ${data.name || 'User'}!</h1><p>Thank you for joining us.</p>`,
+      },
+      passwordReset: {
+        subject: 'Password Reset',
+        html: `<h1>Reset Your Password</h1><p>Click here to reset: ${data.resetUrl}</p>`,
+      },
+      verification: {
+        subject: 'Verify Your Email',
+        html: `<h1>Verify Email</h1><p>Click here: ${data.verifyUrl}</p>`,
+      },
+    };
+
+    const template = templates[name];
+    if (!template) {
+      throw new Error(`Template ${name} not found`);
+    }
+
+    return template;
+  }
 }
 
 export const emailService = new EmailService();

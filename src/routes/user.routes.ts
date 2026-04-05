@@ -23,8 +23,6 @@ const changeEmailSchema = {
   }),
 };
 
-const userIdParamSchema = commonSchemas.id;
-
 const paginationSchema = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
@@ -151,6 +149,25 @@ router.put('/avatar', validate(avatarSchema), UserController.updateAvatar);
  * @response 200 - Deleted
  */
 router.delete('/profile', UserController.deleteAccount);
+
+/**
+ * @swagger
+ * /api/users/export-my-data:
+ *   get:
+ *     summary: Export my data
+ *     description: Export user data for GDPR compliance.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Data exported
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/export-my-data', UserController.exportMyData);
 
 /**
  * @swagger

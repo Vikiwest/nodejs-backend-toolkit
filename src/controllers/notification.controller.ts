@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { notificationService } from '@/services/notificationService';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
@@ -122,7 +122,6 @@ export class NotificationController {
    *         description: Deleted
    */
   static deleteNotification = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { id } = req.params;
     // Stub delete
     ApiResponseUtil.success(res, null, 'Notification deleted');
   });

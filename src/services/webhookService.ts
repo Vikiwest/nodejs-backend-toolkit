@@ -40,8 +40,9 @@ export class WebhookService {
           // Queue retry
           if (webhook.failureCount < webhook.retryCount) {
             await queueService.addJob('webhook-retry', {
-              webhookId: webhook._id,
-              payload,
+              type: 'webhook-retry',
+              webhookId: webhook._id.toString(),
+              data: payload,
               attempt: (webhook.failureCount || 0) + 1,
             });
           }

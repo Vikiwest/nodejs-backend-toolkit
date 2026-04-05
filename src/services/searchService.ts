@@ -1,5 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import { LoggerService } from '@/utils/logger';
+import { UserModel } from '../models/user.model';
 
 interface SearchOptions {
   index: string;
@@ -65,22 +66,20 @@ export class SearchService {
 
     const result = await this.client.search({
       index: 'users',
-      body: {
-        query: { bool: { must } },
-        highlight: {
-          fields: {
-            name: {},
-            email: {},
-            bio: {},
-          },
+      query: { bool: { must } },
+      highlight: {
+        fields: {
+          name: {},
+          email: {},
+          bio: {},
         },
-        suggest: {
-          name_suggest: {
-            prefix: query,
-            completion: {
-              field: 'name_suggest',
-              fuzzy: { fuzziness: 1 },
-            },
+      },
+      suggest: {
+        name_suggest: {
+          prefix: query,
+          completion: {
+            field: 'name_suggest',
+            fuzzy: { fuzziness: 1 },
           },
         },
       },
@@ -94,9 +93,8 @@ export class SearchService {
   }
 
   async reindexAll() {
-    const UserModel = (await import('../models/user.model')).UserModel;
     const users = await UserModel.find({ isDeleted: false });
-    const operations = users.flatMap((user) => [
+    const operations = users.flatMap((user: any) => [
       { index: { _index: 'users', _id: user._id.toString() } },
       {
         id: user._id,
@@ -180,6 +178,20 @@ export class SearchService {
     } catch (error) {
       LoggerService.error('Failed to bulk index documents', error as Error);
     }
+  }
+
+  async globalSearch(query: string, type: string = 'all'): Promise<any> {
+    // Simple implementation - search users if type is users
+    if (type === 'users') {
+      return this.searchUsers(query);
+    }
+    // For 'all', return users for now
+    return this.searchUsers(query);
+  }
+
+  async getSuggestions(query: string): Promise<string[]> {
+    // Simple suggestions - return some mock
+    return [`${query} suggestion 1`, `${query} suggestion 2`];
   }
 }
 

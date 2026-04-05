@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
-import { JWTService } from '@/utils/jwt';
+import JWTService from '@/utils/jwt';
 import { LoggerService } from '@/utils/logger';
 
 interface ConnectedUser {
@@ -10,7 +10,7 @@ interface ConnectedUser {
 }
 
 export class WebSocketService {
-  private io: Server;
+  private io!: Server;
   private connectedUsers: Map<string, ConnectedUser> = new Map();
 
   initialize(server: HttpServer): void {
@@ -31,7 +31,7 @@ export class WebSocketService {
         const decoded = JWTService.verifyAccessToken(token);
         (socket as any).userId = decoded.id;
         next();
-      } catch (error) {
+      } catch {
         next(new Error('Invalid token'));
       }
     });

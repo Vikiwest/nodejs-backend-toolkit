@@ -101,7 +101,7 @@ export class UploadService {
         .catch(() => {});
 
       ApiResponseUtil.success(res, null, 'File deleted');
-    } catch (error) {
+    } catch {
       ApiResponseUtil.notFound(res, 'File not found');
     }
   });

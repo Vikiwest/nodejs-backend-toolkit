@@ -1,13 +1,6 @@
 import mongoose from 'mongoose';
 import { LoggerService } from '../utils/logger';
 
-interface FeatureFlag {
-  name: string;
-  enabled: boolean;
-  rollout: number; // 0-1 percentage
-  environments: string[];
-}
-
 export class FeatureFlagService {
   private static instance: FeatureFlagService;
 

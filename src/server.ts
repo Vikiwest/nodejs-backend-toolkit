@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import http from 'http';
 import { App } from './app';
 import config from './config/env';

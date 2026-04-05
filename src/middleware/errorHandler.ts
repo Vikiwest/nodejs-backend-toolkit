@@ -19,7 +19,7 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   // Log error
   LoggerService.error('Error occurred', err, {
@@ -31,11 +31,11 @@ export const errorHandler = (
 
   // Handle specific error types
   if (err instanceof AppError) {
-    return ApiResponseUtil.error(res, err.message, err.statusCode);
+    return ApiResponseUtil.error(res, err, err.statusCode);
   }
 
   if (err instanceof mongoose.Error.ValidationError) {
-    const errors = Object.values(err.errors).map(e => e.message);
+    const errors = Object.values(err.errors).map((e) => e.message);
     return ApiResponseUtil.validationError(res, errors);
   }
 
@@ -58,9 +58,7 @@ export const errorHandler = (
 
   // Default error
   const statusCode = (err as any).statusCode || 500;
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Internal Server Error' 
-    : err.message;
+  const message = process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message;
 
-  ApiResponseUtil.error(res, message, statusCode);
+  ApiResponseUtil.error(res, err, statusCode, message);
 };

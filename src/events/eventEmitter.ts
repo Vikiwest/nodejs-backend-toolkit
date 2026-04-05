@@ -20,7 +20,7 @@ const localStorage = multer.diskStorage({
 let s3Client: S3Client | null = null;
 let s3Storage: any = null;
 
-if (config.aws.accessKeyId && config.aws.s3Bucket) {
+if (config.aws.accessKeyId && config.aws.secretAccessKey && config.aws.s3Bucket) {
   s3Client = new S3Client({
     region: config.aws.region,
     credentials: {
@@ -65,7 +65,9 @@ export const upload = multer({
 export const uploadSingle = (fieldName: string) => upload.single(fieldName);
 
 // Multiple files upload middleware
-export const uploadMultiple = (fieldName: string, maxCount: number) => upload.array(fieldName, maxCount);
+export const uploadMultiple = (fieldName: string, maxCount: number) =>
+  upload.array(fieldName, maxCount);
 
 // Fields upload middleware
-export const uploadFields = (fields: Array<{ name: string; maxCount?: number }>) => upload.fields(fields);
+export const uploadFields = (fields: Array<{ name: string; maxCount?: number }>) =>
+  upload.fields(fields);

@@ -45,7 +45,7 @@ export class EmailJobs {
       const results = [];
       for (const recipient of recipients) {
         try {
-          const result = await emailService.sendEmail({
+          await emailService.sendEmail({
             to: recipient,
             subject,
             html: EmailJobs.renderTemplate(template, { ...data, name: recipient.name }),

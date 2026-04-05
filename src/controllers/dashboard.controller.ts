@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { UserModel } from '@/models/user.model';
 import { AuditModel } from '@/models/audit.model';
 import { ApiResponseUtil } from '@/utils/apiResponse';

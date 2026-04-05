@@ -1,11 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Request, Response, NextFunction } from 'express';
 
-declare global {
-  namespace Express {
-    interface Request {
-      correlationId: string;
-    }
+declare module 'express' {
+  interface Request {
+    correlationId: string;
   }
 }
 
@@ -16,7 +14,7 @@ export const correlationIdMiddleware = (req: Request, res: Response, next: NextF
   next();
 };
 
-export const loggerWithCorrelation = (req: Request, message: string, meta?: any) => {
+export const loggerWithCorrelation = (_req: Request, _message: string, _meta?: any) => {
   // To be used in services, pass correlationId
   // LoggerService.info(message, { correlationId: req.correlationId, ...meta });
 };

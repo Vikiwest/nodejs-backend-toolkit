@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { AuthRequest } from '@/types';
 import { UserModel } from '@/models/user.model';
 import { ApiResponseUtil } from '@/utils/apiResponse';
@@ -6,7 +6,6 @@ import { asyncHandler } from '@/utils/asyncHandler';
 import { cacheService } from '@/services/cacheService';
 import { auditService } from '@/services/auditService';
 import { ExportService } from '@/services/exportService';
-import type { PaginationQuery } from '@/types';
 
 export class UserController {
   static getProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -347,7 +346,7 @@ export class UserController {
     const { format } = req.query as any;
 
     const users = await UserModel.find({ isDeleted: false }).select('-password');
-    const data = format === 'csv' ? ExportService.exportToCSV(users, 'users') : users;
+    const data = format === 'csv' ? ExportService.generateCSV(users) : users;
     res.set({
       'Content-Type': format === 'csv' ? 'text/csv' : 'application/json',
       'Content-Disposition': `attachment; filename="users.${format}"`,
@@ -400,5 +399,22 @@ export class UserController {
       stats: stats[0] || { total: 0, active: 0, roles: [] },
       growth,
     });
+  });
+
+  static exportMyData = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+
+    const user = await UserModel.findById(userId).select('-password');
+    if (!user) {
+      return ApiResponseUtil.notFound(res, 'User not found');
+    }
+
+    // Export user data for GDPR compliance
+    const data = {
+      user: user.toObject(),
+      exportedAt: new Date().toISOString(),
+    };
+
+    ApiResponseUtil.success(res, data);
   });
 }

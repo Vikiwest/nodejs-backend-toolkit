@@ -1,4 +1,4 @@
-const Paystack = require('paystack');
+import Paystack from 'paystack';
 import config from '@/config/env';
 import { LoggerService } from '@/utils/logger';
 
@@ -23,23 +23,31 @@ export class PaymentService {
     }
   }
 
-  async createPaymentIntent(amount: number, currency: string = 'ngn', email: string, metadata?: any): Promise<PaystackPaymentData> {
+  async createPaymentIntent(
+    amount: number,
+    currency: string = 'ngn',
+    email: string,
+    metadata?: any
+  ): Promise<PaystackPaymentData> {
     if (!this.paystack) throw new Error('Payment service not configured');
 
     try {
       const response: any = await new Promise((resolve, reject) => {
-        this.paystack.transaction.initialize({
-          amount: Math.round(amount * 100),
-          currency,
-          email,
-          metadata: metadata || {},
-          channels: ['card', 'bank_transfer', 'ussd', 'qr'],
-          callback_url: `${process.env.APP_URL || 'http://localhost:3002'}/payment/callback`,
-          reference: 'ref_' + Math.random().toString(36).substr(2, 9),
-        }, (error: any, body: any) => {
-          if (error) reject(error);
-          resolve(body);
-        });
+        this.paystack.transaction.initialize(
+          {
+            amount: Math.round(amount * 100),
+            currency,
+            email,
+            metadata: metadata || {},
+            channels: ['card', 'bank_transfer', 'ussd', 'qr'],
+            callback_url: `${process.env.APP_URL || 'http://localhost:3002'}/payment/callback`,
+            reference: 'ref_' + Math.random().toString(36).substr(2, 9),
+          },
+          (error: any, body: any) => {
+            if (error) reject(error);
+            resolve(body);
+          }
+        );
       });
 
       return response.data;
@@ -92,16 +100,19 @@ export class PaymentService {
 
     try {
       const response: any = await new Promise((resolve, reject) => {
-        this.paystack.customer.create({
-          email,
-          first_name: name ? name.split(' ')[0] : '',
-          last_name: name ? name.split(' ').slice(1).join(' ') : '',
-          phone: '',
-          metadata: {},
-        }, (error: any, body: any) => {
-          if (error) reject(error);
-          resolve(body);
-        });
+        this.paystack.customer.create(
+          {
+            email,
+            first_name: name ? name.split(' ')[0] : '',
+            last_name: name ? name.split(' ').slice(1).join(' ') : '',
+            phone: '',
+            metadata: {},
+          },
+          (error: any, body: any) => {
+            if (error) reject(error);
+            resolve(body);
+          }
+        );
       });
       return response.data;
     } catch (error) {

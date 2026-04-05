@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 
-declare global {
-  namespace Express {
-    interface Request {
-      apiVersion: string;
-    }
+declare module 'express' {
+  interface Request {
+    apiVersion: string;
   }
 }
 

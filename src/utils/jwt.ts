@@ -16,7 +16,7 @@ class JWTService {
     if (!config.jwt.secret) {
       throw new Error('JWT secret is not configured');
     }
-    
+
     const options: SignOptions = {
       expiresIn: config.jwt.expiresIn as any, // Cast to any to bypass type checking
     };
@@ -30,7 +30,7 @@ class JWTService {
     if (!config.jwt.refreshSecret) {
       throw new Error('JWT refresh secret is not configured');
     }
-    
+
     const options: SignOptions = {
       expiresIn: config.jwt.refreshExpiresIn as any, // Cast to any to bypass type checking
     };
@@ -56,7 +56,7 @@ class JWTService {
         throw new Error('JWT secret is not configured');
       }
       return jwt.verify(token, config.jwt.secret) as JwtPayload;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid or expired token');
     }
   }
@@ -70,7 +70,7 @@ class JWTService {
         throw new Error('JWT refresh secret is not configured');
       }
       return jwt.verify(token, config.jwt.refreshSecret) as JwtPayload;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid or expired refresh token');
     }
   }

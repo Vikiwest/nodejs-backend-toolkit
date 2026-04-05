@@ -51,6 +51,11 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -60,7 +65,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -72,10 +77,15 @@ userSchema.pre('save', async function(next) {
 });
 
 // Compare password method
-userSchema.methods.comparePassword = async function(
-  candidatePassword: string
-): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return await encryptionService.comparePassword(candidatePassword, this.password);
+};
+
+// Soft delete method
+userSchema.methods.softDelete = async function (): Promise<void> {
+  this.isDeleted = true;
+  this.deletedAt = new Date();
+  await this.save();
 };
 
 // Indexes

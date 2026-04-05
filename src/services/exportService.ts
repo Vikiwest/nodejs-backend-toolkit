@@ -67,4 +67,9 @@ export class ExportService {
       res.status(500).json({ message: 'Export failed' });
     }
   }
+
+  static generateCSV(data: any[]): string {
+    const parser = new Parser();
+    return parser.parse(data);
+  }
 }

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { searchService } from '@/services/searchService';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
@@ -56,7 +56,7 @@ export class SearchController {
 
   static searchHistory = asyncHandler(async (req: AuthRequest, res: Response) => {
     // Stub
-    const history = [];
+    const history: any[] = [];
     ApiResponseUtil.success(res, history);
   });
 }

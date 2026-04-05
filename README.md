@@ -11,7 +11,7 @@ A modern, production-ready Node.js + TypeScript + Express API starter with built
 - Database: MongoDB with Mongoose
 - Cache: Redis (pub/sub, sessions, rate limit)
 - Queue: Bull + ioredis for jobs (email, cleanup, scheduled)
-- Notifications: Email + webhook + push events
+- Notifications: Email + SMS + webhook + push events
 - File Upload: Multer with local/S3 (config-driven)
 - Payment: Paystack integration, payment verification
 - API docs: Swagger UI / OpenAPI via route annotations
@@ -43,6 +43,7 @@ copy .env.example .env
 - `ELASTICSEARCH_URL` for search (if unset, search endpoints still work safely)
 - `SMTP_*` for email
 - `PAYSTACK_SECRET_KEY` for Paystack
+- `TWILIO_*` for SMS (optional)
 
 4. Start local development
 
@@ -155,7 +156,72 @@ docker-compose up -d mongodb redis
 npm run dev
 ```
 
-## 📈 Production Deployment
+## � API Examples
+
+### User Registration
+
+```bash
+curl -X POST http://localhost:3002/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "securepassword"
+  }'
+```
+
+### User Login
+
+```bash
+curl -X POST http://localhost:3002/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "securepassword"
+  }'
+```
+
+### Get User Profile
+
+```bash
+curl -X GET http://localhost:3002/api/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Create Payment
+
+```bash
+curl -X POST http://localhost:3002/api/payments/initialize \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "email": "john@example.com"
+  }'
+```
+
+### Export User Data (GDPR)
+
+```bash
+curl -X GET http://localhost:3002/api/users/export-my-data \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## �📈 Production Deployment
+
+### Option 1: Docker Compose (Recommended)
+
+1. Set environment variables in `.env.prod`
+
+2. Run production stack:
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+This includes the app, Nginx reverse proxy, MongoDB, and Redis.
+
+### Option 2: Manual Deployment
 
 1. Build code
 
@@ -163,13 +229,15 @@ npm run dev
 npm run build
 ```
 
-2. Start the app with preferred process manager
+2. Start the app with PM2
 
-- `pm2 start dist/server.js --name toolkit`
+```bash
+pm2 start dist/server.js --name toolkit
+```
 
-3. Use reverse proxy (Nginx) with HTTPS
-4. Configure MongoDB/Redis/AWS/Paystack securely
-5. Set environment variables in CI/CD
+3. Configure Nginx reverse proxy with SSL
+4. Set up MongoDB/Redis securely
+5. Use CI/CD for automated deployments
 
 ## 💡 Troubleshooting
 

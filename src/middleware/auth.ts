@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import JWTService from '@/utils/jwt';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
-import { AuthRequest, UserRole } from '@/types';
+import { UserRole } from '@/types';
 
 interface AuthOptions {
   required?: boolean;
@@ -26,13 +26,13 @@ export const authMiddleware = (options: AuthOptions = { required: true }) => {
       const decoded = JWTService.verifyAccessToken(token);
       req.user = {
         id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
+        email: decoded.email as string,
+        role: decoded.role as string,
       };
 
       // Check role authorization
       if (options.roles && options.roles.length > 0) {
-        if (!options.roles.includes(req.user.role as UserRole)) {
+        if (!req.user || !options.roles.includes(req.user.role as UserRole)) {
           return ApiResponseUtil.forbidden(res, 'Insufficient permissions');
         }
       }
@@ -61,7 +61,7 @@ export const requireRole = (...roles: UserRole[]) => {
   };
 };
 
-export const requirePermission = (resource: string, action: string) => {
+export const requirePermission = (_resource: string, _action: string) => {
   return asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     // Implement permission checking logic here
     // This could check against a permissions system or RBAC

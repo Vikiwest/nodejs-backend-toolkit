@@ -1,14 +1,10 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import compression from 'compression';
 import morgan from 'morgan';
 import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import hpp from 'hpp';
-import session from 'express-session';
-import RedisStore from 'connect-redis';
-import { createClient } from 'redis';
 import config from '@/config/env';
 import { logger } from '@/utils/logger';
 import { errorHandler } from '@/middleware/errorHandler';

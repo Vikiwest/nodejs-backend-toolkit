@@ -20,7 +20,7 @@ import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
 import { emailService } from '@/services/emailService';
 import { cacheService } from '@/services/cacheService';
-import { EncryptionService } from '@/utils/encryption';
+import encryptionService from '@/utils/encryption';
 import { twoFactorService } from '@/services/twoFactorService';
 import { AuthRequest } from '@/types';
 
@@ -79,15 +79,18 @@ export class AuthController {
 
     const user = await UserModel.create({ name, email, password });
 
-    const verificationToken = EncryptionService.generateRandomToken(32);
+    const verificationToken = encryptionService.generateRandomToken(32);
     await cacheService.set(`verify:${verificationToken}`, user._id.toString(), 86400);
 
     await emailService.sendVerificationEmail(email, verificationToken);
 
-    const tokens = JWTService.generateTokens({ id: user._id.toString(), email, role: user.role });
+    const tokens = JWTService.generateTokens({
+      userId: user._id.toString(),
+      email,
+      role: user.role,
+    });
 
     const userResponse = user.toObject();
-    delete userResponse.password;
 
     ApiResponseUtil.created(
       res,
@@ -152,13 +155,12 @@ export class AuthController {
     await user.save();
 
     const tokens = JWTService.generateTokens({
-      id: user._id.toString(),
+      userId: user._id.toString(),
       email: user.email,
       role: user.role,
     });
 
     const userResponse = user.toObject();
-    delete userResponse.password;
 
     ApiResponseUtil.success(res, { user: userResponse, tokens });
   });
@@ -224,7 +226,7 @@ export class AuthController {
 
     const decoded = JWTService.verifyRefreshToken(refreshToken);
     const tokens = JWTService.generateTokens({
-      id: decoded.id,
+      userId: decoded.id,
       email: decoded.email,
       role: decoded.role,
     });
@@ -334,7 +336,7 @@ export class AuthController {
       return ApiResponseUtil.badRequest(res, 'Email already verified');
     }
 
-    const verificationToken = EncryptionService.generateRandomToken(32);
+    const verificationToken = encryptionService.generateRandomToken(32);
     await cacheService.set(`verify:${verificationToken}`, user._id.toString(), 86400);
 
     await emailService.sendVerificationEmail(email, verificationToken);
@@ -375,7 +377,7 @@ export class AuthController {
       return ApiResponseUtil.success(res, null, 'Password reset email sent if account exists');
     }
 
-    const resetToken = EncryptionService.generateRandomToken(32);
+    const resetToken = encryptionService.generateRandomToken(32);
     await cacheService.set(`reset:${resetToken}`, user._id.toString(), 3600);
 
     await emailService.sendPasswordResetEmail(email, resetToken);

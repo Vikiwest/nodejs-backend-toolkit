@@ -9,10 +9,14 @@ export interface IUser extends Document {
   role: UserRole;
   isActive: boolean;
   isEmailVerified: boolean;
+  isDeleted: boolean;
+  twoFactorSecret?: string;
+  isTwoFactorEnabled: boolean;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  softDelete(): Promise<void>;
 }
 
 export interface UserPayload {
@@ -55,6 +59,8 @@ export interface JobData {
   type: string;
   data: any;
   userId?: string;
+  webhookId?: string;
+  attempt?: number;
   priority?: number;
   options?: any;
 }

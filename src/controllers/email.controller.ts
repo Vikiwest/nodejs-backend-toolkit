@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { emailService } from '@/services/emailService';
 import { ApiResponseUtil } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
@@ -66,11 +66,12 @@ export class EmailController {
   });
 
   static sendBulk = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { recipients, template, data = {} } = req.body;
+    const { recipients } = req.body;
 
     // Queue bulk emails
     for (const recipient of recipients) {
-      // emailService.queueEmail(recipient, template, data);
+      // TODO: Implement bulk email queuing
+      console.log(`Would send email to: ${recipient}`);
     }
 
     ApiResponseUtil.success(res, null, 'Bulk emails queued');
@@ -78,7 +79,7 @@ export class EmailController {
 
   static getLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
     // Stub email logs
-    const logs = [];
+    const logs: any[] = [];
     ApiResponseUtil.success(res, logs);
   });
 }

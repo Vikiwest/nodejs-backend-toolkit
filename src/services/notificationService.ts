@@ -46,7 +46,10 @@ export class NotificationService extends EventEmitter {
     this.emit('notification-sent', fullNotification);
   }
 
-  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+  async getUserNotifications(
+    userId: string,
+    _unreadOnly: boolean = false
+  ): Promise<Notification[]> {
     const userNotifications = this.notifications.get(userId) || [];
     return userNotifications;
   }
@@ -54,7 +57,7 @@ export class NotificationService extends EventEmitter {
   async markAsRead(userId: string, notificationId: string): Promise<void> {
     const userNotifications = this.notifications.get(userId);
     if (userNotifications) {
-      const notification = userNotifications.find(n => n.id === notificationId);
+      const notification = userNotifications.find((n) => n.id === notificationId);
       if (notification) {
         this.emit('notification-read', notification);
       }
