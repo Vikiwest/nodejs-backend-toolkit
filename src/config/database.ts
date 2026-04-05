@@ -16,7 +16,21 @@ export class DatabaseConnection {
 
   async connect(): Promise<void> {
     try {
-      await mongoose.connect(config.mongodb.uri);
+      // Validate MongoDB URI is configured
+      if (!config.mongodb.uri) {
+        const errorMsg = `MongoDB URI not configured. Expected ${config.isProduction() ? 'MONGODB_URI_PROD' : 'MONGODB_URI'} environment variable`;
+        LoggerService.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      LoggerService.info(`Connecting to MongoDB in ${config.nodeEnv} environment...`);
+
+      await mongoose.connect(config.mongodb.uri, {
+        ...config.mongodb.options,
+        serverSelectionTimeoutMS: 10000, // 10 second timeout
+        socketTimeoutMS: 45000,
+      });
+
       LoggerService.info('MongoDB connected successfully');
 
       mongoose.connection.on('error', (error) => {

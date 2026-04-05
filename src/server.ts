@@ -16,6 +16,8 @@ class Server {
 
   async start(): Promise<void> {
     try {
+      logger.info(`Starting server in ${config.nodeEnv} environment...`);
+
       // Connect to MongoDB using the database connection manager
       await databaseConnection.connect();
       logger.info('MongoDB connected successfully');
@@ -43,7 +45,8 @@ class Server {
       // Graceful shutdown
       this.setupGracefulShutdown();
     } catch (error) {
-      logger.error('Failed to start server', error as Error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to start server: ${errorMessage}`, error as Error);
       process.exit(1);
     }
   }
