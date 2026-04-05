@@ -1,6 +1,13 @@
-import Paystack from 'paystack';
 import config from '@/config/env';
 import { LoggerService } from '@/utils/logger';
+
+let Paystack: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, global-require
+  Paystack = require('paystack');
+} catch {
+  LoggerService.warn('Paystack module not available');
+}
 
 interface PaystackPaymentData {
   reference: string;

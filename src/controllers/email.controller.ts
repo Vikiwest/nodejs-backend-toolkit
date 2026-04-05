@@ -53,16 +53,24 @@ export class EmailController {
   });
 
   static sendTemplate = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { name, to, data = {} } = req.body;
-    const template = await emailService.getTemplate(name, data);
+    const { name } = req.params;
+    const { to, data = {} } = req.body;
 
-    await emailService.sendEmail({
-      to,
-      subject: template.subject,
-      html: template.html,
-    });
+    if (!to) {
+      return ApiResponseUtil.badRequest(res, 'Email recipient (to) is required');
+    }
 
-    ApiResponseUtil.success(res, null, 'Template email sent');
+    try {
+      const template = await emailService.getTemplate(name, data);
+      await emailService.sendEmail({
+        to,
+        subject: template.subject,
+        html: template.html,
+      });
+      ApiResponseUtil.success(res, null, 'Template email sent');
+    } catch {
+      ApiResponseUtil.badRequest(res, `Template "${name}" not found or invalid`);
+    }
   });
 
   static sendBulk = asyncHandler(async (req: AuthRequest, res: Response) => {

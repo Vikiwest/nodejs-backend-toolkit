@@ -87,6 +87,64 @@ router.post('/confirm', validate(confirmPaymentSchema), PaymentController.confir
 
 /**
  * @swagger
+ * /api/payments:
+ *   get:
+ *     summary: Get user's payments
+ *     description: Get payment history for authenticated user
+ *     tags: [Payment]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: User payments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedResponse'
+ */
+router.get(
+  '/',
+  (req, res, next) => {
+    req.params.userId = (req as any).user?.id || 'current';
+    next();
+  },
+  PaymentController.getUserPayments
+);
+
+/**
+ * @swagger
+ * /api/payments/history:
+ *   get:
+ *     summary: Get user payments history
+ *     tags: [Payment]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Payment history
+ */
+router.get(
+  '/history',
+  (req, res, next) => {
+    req.params.userId = (req as any).user?.id || 'current';
+    next();
+  },
+  PaymentController.getUserPayments
+);
+
+/**
+ * @swagger
  * /api/payments/{id}:
  *   get:
  *     summary: Get payment details
@@ -117,8 +175,8 @@ router.get('/:id', PaymentController.getPayment);
  * @swagger
  * /api/payments/user/{userId}:
  *   get:
- *     summary: Get user payments
- *     description: Get payment history for a specific user
+ *     summary: Get specific user payments
+ *     description: Get payment history for a specific user (admin)
  *     tags: [Payment]
  *     security:
  *       - bearerAuth: []

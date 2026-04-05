@@ -44,6 +44,35 @@ export class SearchService {
   }
 
   async searchUsers(query: string, filters?: any): Promise<{ items: any[]; total: number }> {
+    // Fallback to database search if Elasticsearch is not configured
+    if (!this.client) {
+      const searchFilter: any = { isDeleted: false };
+
+      if (query) {
+        searchFilter.$or = [
+          { name: { $regex: query, $options: 'i' } },
+          { email: { $regex: query, $options: 'i' } },
+          { bio: { $regex: query, $options: 'i' } },
+        ];
+      }
+
+      if (filters?.role) {
+        searchFilter.role = filters.role;
+      }
+
+      if (filters?.isActive !== undefined) {
+        searchFilter.isActive = filters.isActive;
+      }
+
+      const items = await UserModel.find(searchFilter)
+        .select('-password')
+        .limit(filters?.limit || 10)
+        .skip(((filters?.page || 1) - 1) * (filters?.limit || 10));
+      const total = await UserModel.countDocuments(searchFilter);
+
+      return { items, total };
+    }
+
     const must = [];
 
     if (query) {

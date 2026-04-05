@@ -25,7 +25,7 @@ export const authMiddleware = (options: AuthOptions = { required: true }) => {
     try {
       const decoded = JWTService.verifyAccessToken(token);
       req.user = {
-        id: decoded.id,
+        id: decoded.userId,
         email: decoded.email as string,
         role: decoded.role as string,
       };

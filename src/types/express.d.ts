@@ -10,6 +10,8 @@ declare global {
       };
       query: ParsedQs;
       params: Record<string, string>;
+      correlationId?: string;
+      apiVersion?: string;
     }
   }
 }

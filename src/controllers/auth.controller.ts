@@ -224,14 +224,22 @@ export class AuthController {
   static refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
 
-    const decoded = JWTService.verifyRefreshToken(refreshToken);
-    const tokens = JWTService.generateTokens({
-      userId: decoded.id,
-      email: decoded.email,
-      role: decoded.role,
-    });
+    if (!refreshToken) {
+      return ApiResponseUtil.badRequest(res, 'Refresh token is required');
+    }
 
-    ApiResponseUtil.success(res, { tokens });
+    try {
+      const decoded = JWTService.verifyRefreshToken(refreshToken);
+      const tokens = JWTService.generateTokens({
+        userId: decoded.userId,
+        email: decoded.email,
+        role: decoded.role,
+      });
+
+      ApiResponseUtil.success(res, { tokens }, 'Token refreshed successfully');
+    } catch {
+      ApiResponseUtil.unauthorized(res, 'Invalid or expired refresh token');
+    }
   });
 
   /**

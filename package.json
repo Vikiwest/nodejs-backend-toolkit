@@ -23,7 +23,7 @@
     "prebuild": "npm run clean",
     "generate-client": "npx @openapitools/openapi-generator-cli generate -i ./swagger.json -g typescript-axios -o ./client",
     "backup": "ts-node scripts/backup.ts",
-    "prepare": "husky"
+    "prepare": "[ -z \"$CI\" ] && husky || echo 'Skipping Husky in CI environment'"
   },
   "lint-staged": {
     "*.ts": [

@@ -40,8 +40,8 @@ class EncryptionService {
    */
   async hashPassword(password: string): Promise<string> {
     const bcrypt = await import('bcryptjs');
-    const salt = await bcrypt.genSalt(10);
-    return await bcrypt.hash(password, salt);
+    const salt = await bcrypt.default.genSalt(10);
+    return await bcrypt.default.hash(password, salt);
   }
 
   /**
@@ -49,7 +49,7 @@ class EncryptionService {
    */
   async comparePassword(password: string, hash: string): Promise<boolean> {
     const bcrypt = await import('bcryptjs');
-    return await bcrypt.compare(password, hash);
+    return await bcrypt.default.compare(password, hash);
   }
 
   /**
