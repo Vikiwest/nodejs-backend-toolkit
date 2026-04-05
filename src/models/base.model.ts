@@ -30,13 +30,13 @@ export const baseSchema = new Schema(
   baseSchemaOptions
 );
 
-baseSchema.methods.softDelete = async function(this: IBaseModel): Promise<void> {
+baseSchema.methods.softDelete = async function (this: IBaseModel): Promise<void> {
   this.isDeleted = true;
   this.deletedAt = new Date();
   await this.save();
 };
 
-baseSchema.methods.restore = async function(this: IBaseModel): Promise<void> {
+baseSchema.methods.restore = async function (this: IBaseModel): Promise<void> {
   this.isDeleted = false;
   this.deletedAt = undefined;
   await this.save();

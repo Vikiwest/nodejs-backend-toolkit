@@ -69,10 +69,9 @@ export class EmailController {
     const { recipients } = req.body;
 
     // Queue bulk emails
-    for (const recipient of recipients) {
-      // TODO: Implement bulk email queuing
-      console.log(`Would send email to: ${recipient}`);
-    }
+    recipients.forEach(() => {
+      // emailService.queueEmail(recipient, template, data);
+    });
 
     ApiResponseUtil.success(res, null, 'Bulk emails queued');
   });

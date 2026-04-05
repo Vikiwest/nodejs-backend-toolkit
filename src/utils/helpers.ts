@@ -3,11 +3,15 @@ import { Types } from 'mongoose';
 
 export class Helpers {
   static generateRandomString(length: number = 8): string {
-    return Math.random().toString(36).substring(2, 2 + length);
+    return Math.random()
+      .toString(36)
+      .substring(2, 2 + length);
   }
 
   static generateOTP(length: number = 6): string {
-    return Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
+    return Math.floor(Math.random() * Math.pow(10, length))
+      .toString()
+      .padStart(length, '0');
   }
 
   static formatDate(date: Date, format: string = 'YYYY-MM-DD HH:mm:ss'): string {
@@ -47,14 +51,16 @@ export class Helpers {
   }
 
   static sanitizeUser(user: any): any {
-    const sanitized = { ...user.toObject ? user.toObject() : user };
+    const sanitized = { ...(user.toObject ? user.toObject() : user) };
     delete sanitized.password;
     delete sanitized.__v;
     return sanitized;
   }
 
   static getClientIp(req: Request): string {
-    return (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || '';
+    return (
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || ''
+    );
   }
 
   static slugify(text: string): string {
@@ -72,7 +78,7 @@ export class Helpers {
   }
 
   static async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   static retry<T>(fn: () => Promise<T>, retries: number = 3, delayMs: number = 1000): Promise<T> {

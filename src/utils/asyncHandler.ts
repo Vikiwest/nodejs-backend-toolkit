@@ -12,4 +12,3 @@ export const asyncHandler = (fn: (...args: any[]) => Promise<any>): RequestHandl
 };
 
 export default asyncHandler;
-

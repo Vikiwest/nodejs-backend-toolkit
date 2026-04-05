@@ -20,12 +20,12 @@ register.registerMetric(httpRequestDurationMicroseconds);
 
 export const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const end = httpRequestDurationMicroseconds.startTimer();
-  
+
   res.on('finish', () => {
     const route = req.route ? req.route.path : req.path;
     end({ method: req.method, route, status_code: res.statusCode.toString() });
   });
-  
+
   next();
 };
 

@@ -55,7 +55,10 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 
 // Create multer instance
 export const upload = multer({
-  storage: config.aws.s3Bucket && config.aws.accessKeyId && config.aws.secretAccessKey ? s3Storage : localStorage,
+  storage:
+    config.aws.s3Bucket && config.aws.accessKeyId && config.aws.secretAccessKey
+      ? s3Storage
+      : localStorage,
   limits: {
     fileSize: config.upload.maxSize,
   },
@@ -66,7 +69,9 @@ export const upload = multer({
 export const uploadSingle = (fieldName: string) => upload.single(fieldName);
 
 // Multiple files upload middleware
-export const uploadMultiple = (fieldName: string, maxCount: number) => upload.array(fieldName, maxCount);
+export const uploadMultiple = (fieldName: string, maxCount: number) =>
+  upload.array(fieldName, maxCount);
 
 // Fields upload middleware
-export const uploadFields = (fields: Array<{ name: string; maxCount?: number }>) => upload.fields(fields);
+export const uploadFields = (fields: Array<{ name: string; maxCount?: number }>) =>
+  upload.fields(fields);

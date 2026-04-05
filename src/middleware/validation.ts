@@ -18,7 +18,7 @@ export const validate = (schemas: ValidationSchema) => {
         stripUnknown: true,
       });
       if (error) {
-        errors.push(...error.details.map(d => d.message));
+        errors.push(...error.details.map((d) => d.message));
       }
     }
 
@@ -28,7 +28,7 @@ export const validate = (schemas: ValidationSchema) => {
         stripUnknown: true,
       });
       if (error) {
-        errors.push(...error.details.map(d => d.message));
+        errors.push(...error.details.map((d) => d.message));
       }
     }
 
@@ -38,7 +38,7 @@ export const validate = (schemas: ValidationSchema) => {
         stripUnknown: true,
       });
       if (error) {
-        errors.push(...error.details.map(d => d.message));
+        errors.push(...error.details.map((d) => d.message));
       }
     }
 
@@ -52,30 +52,36 @@ export const validate = (schemas: ValidationSchema) => {
 
 // Common validation schemas
 export const commonSchemas = {
-  id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
-    'string.pattern.base': 'Invalid ID format',
-  }),
-  
+  id: Joi.string()
+    .pattern(/^[0-9a-fA-F]{24}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Invalid ID format',
+    }),
+
   email: Joi.string().email().required().messages({
     'string.email': 'Invalid email format',
   }),
-  
+
   password: Joi.string().min(6).max(100).required().messages({
     'string.min': 'Password must be at least 6 characters',
     'string.max': 'Password must not exceed 100 characters',
   }),
-  
+
   name: Joi.string().min(2).max(100).required().messages({
     'string.min': 'Name must be at least 2 characters',
     'string.max': 'Name must not exceed 100 characters',
   }),
-  
-  phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional().messages({
-    'string.pattern.base': 'Invalid phone number format',
-  }),
-  
+
+  phone: Joi.string()
+    .pattern(/^[0-9]{10,15}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Invalid phone number format',
+    }),
+
   url: Joi.string().uri().optional(),
-  
+
   pagination: {
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(10),

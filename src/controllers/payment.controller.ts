@@ -6,8 +6,9 @@ import { AuthRequest } from '@/types';
 
 export class PaymentController {
   static createIntent = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { amount, currency = 'usd' } = req.body;
     // Stripe stub - add real impl with env vars
-    ApiResponseUtil.success(res, { clientSecret: 'pi_stub_123_secret_456' });
+    ApiResponseUtil.success(res, { clientSecret: 'pi_stub_123_secret_456', amount, currency });
   });
 
   static confirmPayment = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -39,7 +40,8 @@ export class PaymentController {
   });
 
   static refundPayment = asyncHandler(async (req: AuthRequest, res: Response) => {
-    ApiResponseUtil.success(res, { refunded: true });
+    const { id } = req.params;
+    ApiResponseUtil.success(res, { refunded: true, id });
   });
 
   static stripeWebhook = asyncHandler(async (req: Request, res: Response) => {
