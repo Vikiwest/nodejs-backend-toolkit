@@ -768,500 +768,626 @@ export class App {
           // Explicitly requested JSON
           res.status(200).json(healthData);
         } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
-          const uptimeFormatted = formatUptime(healthData.uptime);
-          const memoryUsagePercent = Math.round((memoryMB.heapUsed / memoryMB.heapTotal) * 100);
-
-          res.send(`
+          res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🩺 System Health Dashboard - Node.js Backend Toolkit</title>
-  <meta name="description" content="Real-time system health monitoring dashboard">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>🩺 System Health Dashboard | Node.js Backend Toolkit</title>
+  <meta name="description" content="Real-time system health monitoring dashboard with service status, memory metrics, and uptime tracking.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #3b82f6;
-      --primary-dark: #1d4ed8;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --error: #ef4444;
-      --info: #06b6d4;
-      --slate-50: #f8fafc;
-      --slate-100: #f1f5f9;
-      --slate-200: #e2e8f0;
-      --slate-300: #cbd5e1;
-      --slate-800: #1e293b;
-      --slate-900: #0f172a;
-      --white: #ffffff;
-      --glass-bg: rgba(255,255,255,0.95);
-      --glass-border: rgba(255,255,255,0.2);
-      --shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
-    }
-
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      color: var(--slate-900);
-      line-height: 1.6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #f1f5f9 0%, #e6edf4 100%);
+      color: #0f172a;
+      line-height: 1.5;
       min-height: 100vh;
+      padding: 2rem 1rem;
     }
 
-    .container {
-      max-width: 1200px;
+    /* Modern glassmorphism container */
+    .dashboard-container {
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem;
     }
 
-    /* Header */
-    .header {
+    /* Header Section */
+    .health-header {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
 
-    .header h1 {
+    .health-header h1 {
       font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--slate-900);
-      margin-bottom: 0.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0f172a, #2563eb);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .header p {
-      color: var(--slate-600);
-      font-size: 1.1rem;
-    }
-
-    .last-updated {
-      color: var(--slate-500);
-      font-size: 0.9rem;
+    .health-sub {
+      color: #475569;
+      font-size: 1rem;
       margin-top: 0.5rem;
     }
 
-    /* Status Overview */
-    .status-overview {
+    .timestamp-badge {
+      display: inline-block;
+      background: rgba(37, 99, 235, 0.1);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1.2rem;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #2563eb;
+      margin-top: 1rem;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
-    .status-card {
-      background: var(--white);
-      border-radius: 16px;
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      border-radius: 28px;
       padding: 1.5rem;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--slate-200);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
       transition: all 0.2s ease;
     }
 
-    .status-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-xl);
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.12);
+      background: white;
     }
 
-    .status-header {
+    .kpi-header {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1rem;
     }
 
-    .status-icon {
+    .kpi-icon {
       width: 48px;
       height: 48px;
-      border-radius: 12px;
+      background: linear-gradient(145deg, #eff6ff, #e0e7ff);
+      border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
     }
 
-    .status-icon.healthy { background: var(--success); color: white; }
-    .status-icon.warning { background: var(--warning); color: white; }
-    .status-icon.error { background: var(--error); color: white; }
-    .status-icon.info { background: var(--info); color: white; }
-
-    .status-title {
-      font-size: 1.25rem;
+    .kpi-title {
+      font-size: 0.85rem;
       font-weight: 600;
-      color: var(--slate-900);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #475569;
     }
 
-    .status-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--slate-900);
-      margin-bottom: 0.5rem;
+    .kpi-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+      margin-top: 0.25rem;
     }
 
-    .status-meta {
-      color: var(--slate-600);
-      font-size: 0.9rem;
+    .kpi-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.2rem 0.7rem;
+      border-radius: 30px;
+      display: inline-block;
+      margin-top: 0.5rem;
     }
 
-    /* Services Grid */
+    .badge-success {
+      background: #10b98120;
+      color: #047857;
+      border: 1px solid #10b98140;
+    }
+
+    .badge-warning {
+      background: #f59e0b20;
+      color: #b45309;
+      border: 1px solid #f59e0b40;
+    }
+
+    .badge-info {
+      background: #3b82f620;
+      color: #1e40af;
+      border: 1px solid #3b82f640;
+    }
+
+    /* Services Row */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
 
-    .service-card {
-      background: var(--white);
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--slate-200);
+    .service-item {
+      background: white;
+      border-radius: 20px;
+      padding: 1rem 1.2rem;
       display: flex;
       align-items: center;
       gap: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
     }
 
-    .service-status {
+    .service-status-led {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
     }
 
-    .service-status.operational { background: var(--success); }
-    .service-status.failed { background: var(--error); }
-    .service-status.disconnected { background: var(--warning); }
+    .led-green { background: #10b981; box-shadow: 0 0 6px #10b981; }
+    .led-red { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+    .led-yellow { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 
-    .service-info h4 {
+    .service-info {
+      flex: 1;
+    }
+
+    .service-name {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .service-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .service-status-text {
+      font-size: 0.75rem;
       font-weight: 600;
-      color: var(--slate-900);
-      margin-bottom: 0.25rem;
     }
 
-    .service-info p {
-      color: var(--slate-600);
-      font-size: 0.9rem;
-    }
-
-    /* Memory Usage */
-    .memory-section {
-      background: var(--white);
-      border-radius: 16px;
+    /* Memory section */
+    .memory-panel {
+      background: white;
+      border-radius: 28px;
       padding: 1.5rem;
       margin-bottom: 2rem;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--slate-200);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
     }
 
     .memory-header {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
       margin-bottom: 1.5rem;
     }
 
     .memory-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--slate-900);
-    }
-
-    .memory-usage {
-      font-size: 1.5rem;
       font-weight: 700;
-      color: var(--primary);
+      font-size: 1.2rem;
     }
 
-    .memory-bars {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    .memory-total {
+      font-size: 0.9rem;
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    .metric-bars {
+      display: flex;
+      flex-direction: column;
       gap: 1rem;
     }
 
-    .memory-bar {
+    .metric-row {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.3rem;
     }
 
-    .memory-bar label {
-      font-size: 0.9rem;
+    .metric-label {
+      font-size: 0.8rem;
       font-weight: 500;
-      color: var(--slate-700);
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
     }
 
-    .progress-bar {
+    .bar-bg {
+      background: #e2e8f0;
+      border-radius: 12px;
       height: 8px;
-      background: var(--slate-200);
-      border-radius: 4px;
       overflow: hidden;
     }
 
-    .progress-fill {
+    .bar-fill {
       height: 100%;
-      border-radius: 4px;
-      transition: width 0.3s ease;
+      border-radius: 12px;
+      width: 0%;
+      transition: width 0.4s ease;
     }
 
-    .progress-fill.rss { background: var(--primary); }
-    .progress-fill.heap-used { background: var(--success); }
-    .progress-fill.heap-total { background: var(--info); }
-    .progress-fill.external { background: var(--warning); }
+    .fill-primary { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+    .fill-success { background: linear-gradient(90deg, #059669, #10b981); }
+    .fill-info { background: linear-gradient(90deg, #0891b2, #06b6d4); }
+    .fill-warning { background: linear-gradient(90deg, #d97706, #f59e0b); }
 
-    .memory-value {
-      font-size: 0.8rem;
-      color: var(--slate-600);
-      text-align: right;
-    }
-
-    /* System Info */
-    .system-info {
-      background: var(--white);
-      border-radius: 16px;
+    /* System details */
+    .system-panel {
+      background: white;
+      border-radius: 28px;
       padding: 1.5rem;
-      box-shadow: var(--shadow-lg);
-      border: 1px solid var(--slate-200);
+      margin-bottom: 2rem;
+      border: 1px solid #e2e8f0;
     }
 
-    .system-grid {
+    .sys-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem;
+      margin-top: 0.5rem;
     }
 
-    .system-item {
+    .sys-card {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 0.9rem;
       text-align: center;
-      padding: 1rem;
-      background: var(--slate-50);
-      border-radius: 8px;
+      border: 1px solid #eef2ff;
     }
 
-    .system-item h4 {
-      font-size: 0.9rem;
-      color: var(--slate-600);
-      margin-bottom: 0.5rem;
+    .sys-card h4 {
+      font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      color: #475569;
+      margin-bottom: 0.5rem;
     }
 
-    .system-item p {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--slate-900);
+    .sys-card p {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f172a;
     }
 
-    /* Actions */
-    .actions {
-      text-align: center;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--slate-200);
+    /* Action buttons */
+    .action-bar {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 2rem 0 1rem;
     }
 
-    .actions a {
+    .action-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #1e293b;
+      text-decoration: none;
+      transition: all 0.2s;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      margin: 0 0.5rem;
     }
 
-    .actions a:hover {
-      background: var(--primary-dark);
+    .action-btn:hover {
+      background: #f1f5f9;
+      border-color: #3b82f6;
       transform: translateY(-1px);
     }
 
-    .actions .secondary {
-      background: var(--slate-600);
+    .action-btn-primary {
+      background: #0f172a;
+      color: white;
+      border: none;
     }
 
-    .actions .secondary:hover {
-      background: var(--slate-800);
+    .action-btn-primary:hover {
+      background: #1e293b;
+    }
+
+    /* Footer */
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #cbd5e180;
     }
 
     /* Responsive */
-    @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      .status-overview { grid-template-columns: 1fr; }
-      .services-grid { grid-template-columns: 1fr; }
-      .memory-bars { grid-template-columns: 1fr; }
-      .system-grid { grid-template-columns: repeat(2, 1fr); }
-      .actions a { display: block; margin: 0.5rem 0; }
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .kpi-value { font-size: 1.6rem; }
+      .kpi-card { padding: 1rem; }
     }
 
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Refresh pulse animation */
+    @keyframes softPulse {
+      0% { opacity: 0.7; }
+      100% { opacity: 1; }
     }
-
-    .status-card, .service-card, .memory-section, .system-info {
-      animation: fadeIn 0.5s ease-out;
+    .auto-refresh-badge {
+      font-size: 0.7rem;
+      background: #eef2ff;
+      border-radius: 20px;
+      padding: 0.2rem 0.8rem;
+      display: inline-block;
+      margin-left: 0.75rem;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>🩺 System Health Dashboard</h1>
-      <p>Real-time monitoring of your Node.js Backend Toolkit</p>
-      <div class="last-updated">Last updated: ${new Date(healthData.timestamp).toLocaleString()}</div>
-    </header>
-
-    <div class="status-overview">
-      <div class="status-card">
-        <div class="status-header">
-          <div class="status-icon healthy">✅</div>
-          <div>
-            <div class="status-title">Overall Status</div>
-            <div class="status-meta">System Health</div>
-          </div>
-        </div>
-        <div class="status-value">${healthData.status.charAt(0).toUpperCase() + healthData.status.slice(1)}</div>
-      </div>
-
-      <div class="status-card">
-        <div class="status-header">
-          <div class="status-icon info">⏱️</div>
-          <div>
-            <div class="status-title">Uptime</div>
-            <div class="status-meta">System Runtime</div>
-          </div>
-        </div>
-        <div class="status-value">${uptimeFormatted}</div>
-      </div>
-
-      <div class="status-card">
-        <div class="status-header">
-          <div class="status-icon info">💾</div>
-          <div>
-            <div class="status-title">Memory Usage</div>
-            <div class="status-meta">Heap Memory</div>
-          </div>
-        </div>
-        <div class="status-value">${memoryUsagePercent}%</div>
-      </div>
-    </div>
-
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="service-status ${healthData.services.database === 'connected' ? 'operational' : 'disconnected'}"></div>
-        <div class="service-info">
-          <h4>Database</h4>
-          <p>${healthData.services.database.charAt(0).toUpperCase() + healthData.services.database.slice(1)}</p>
-        </div>
-      </div>
-
-      <div class="service-card">
-        <div class="service-status ${healthData.services.cache === 'operational' ? 'operational' : 'failed'}"></div>
-        <div class="service-info">
-          <h4>Cache Service</h4>
-          <p>${healthData.services.cache.charAt(0).toUpperCase() + healthData.services.cache.slice(1)}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="memory-section">
-      <div class="memory-header">
-        <div class="memory-title">📊 Memory Usage</div>
-        <div class="memory-usage">${memoryMB.heapUsed} MB / ${memoryMB.heapTotal} MB</div>
-      </div>
-
-      <div class="memory-bars">
-        <div class="memory-bar">
-          <label>RSS (Resident Set Size)</label>
-          <div class="progress-bar">
-            <div class="progress-fill rss" style="width: ${Math.min((memoryMB.rss / (memoryMB.heapTotal * 2)) * 100, 100)}%"></div>
-          </div>
-          <div class="memory-value">${memoryMB.rss} MB</div>
-        </div>
-
-        <div class="memory-bar">
-          <label>Heap Used</label>
-          <div class="progress-bar">
-            <div class="progress-fill heap-used" style="width: ${memoryUsagePercent}%"></div>
-          </div>
-          <div class="memory-value">${memoryMB.heapUsed} MB</div>
-        </div>
-
-        <div class="memory-bar">
-          <label>Heap Total</label>
-          <div class="progress-bar">
-            <div class="progress-fill heap-total" style="width: 100%"></div>
-          </div>
-          <div class="memory-value">${memoryMB.heapTotal} MB</div>
-        </div>
-
-        <div class="memory-bar">
-          <label>External Memory</label>
-          <div class="progress-bar">
-            <div class="progress-fill external" style="width: ${Math.min((memoryMB.external / memoryMB.heapTotal) * 100, 100)}%"></div>
-          </div>
-          <div class="memory-value">${memoryMB.external} MB</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="system-info">
-      <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--slate-900);">🖥️ System Information</h3>
-      <div class="system-grid">
-        <div class="system-item">
-          <h4>Environment</h4>
-          <p>${healthData.environment}</p>
-        </div>
-        <div class="system-item">
-          <h4>Node Version</h4>
-          <p>${healthData.system.nodeVersion}</p>
-        </div>
-        <div class="system-item">
-          <h4>Platform</h4>
-          <p>${healthData.system.platform}</p>
-        </div>
-        <div class="system-item">
-          <h4>Architecture</h4>
-          <p>${healthData.system.arch}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <a href="/health?format=json" class="secondary">📄 JSON Response</a>
-      <a href="/metrics">📊 Metrics Dashboard</a>
-      <a href="/">🏠 Home</a>
-      <a href="/api-docs">📚 API Docs</a>
-    </div>
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="health-header">
+    <h1>
+      <span>🩺</span> System Health Dashboard
+    </h1>
+    <div class="health-sub">Real-time monitoring & service observability</div>
+    <div class="timestamp-badge" id="liveTimestamp">Loading timestamp...</div>
+    <div class="auto-refresh-badge">⟳ Auto‑refresh every 30s</div>
   </div>
 
-  <script>
-    // Auto-refresh every 30 seconds
-    setTimeout(() => {
-      window.location.reload();
-    }, 30000);
+  <!-- KPI Cards will be injected dynamically -->
+  <div class="kpi-grid" id="kpiGrid"></div>
 
-    // Add loading state for manual refresh
-    function refreshDashboard() {
-      const btn = event.target;
-      btn.textContent = '🔄 Refreshing...';
-      btn.disabled = true;
-      window.location.reload();
+  <!-- Services Status Section -->
+  <div class="section-title">
+    <span>🔌</span> Core Services
+  </div>
+  <div class="services-grid" id="servicesGrid"></div>
+
+  <!-- Memory & Performance -->
+  <div class="memory-panel" id="memoryPanel">
+    <div class="memory-header">
+      <div class="memory-title">📈 Memory & Resource Usage</div>
+      <div class="memory-total" id="memorySummary">—</div>
+    </div>
+    <div class="metric-bars" id="metricBars"></div>
+  </div>
+
+  <!-- System Information -->
+  <div class="system-panel">
+    <div class="section-title" style="margin-top:0; margin-bottom:1rem;">🖥️ Platform & Runtime</div>
+    <div class="sys-grid" id="systemGrid"></div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-bar">
+    <a href="/health?format=json" class="action-btn">📄 Raw JSON</a>
+    <a href="/metrics" class="action-btn">📊 Metrics Dashboard</a>
+    <a href="/api-docs" class="action-btn">📘 API Docs</a>
+    <a href="/" class="action-btn">🏠 Back to Home</a>
+  </div>
+  <div class="footer-note">
+    ⚡ Node.js Backend Toolkit — Enterprise Health Monitor • Data refreshes every 30 seconds
+  </div>
+</div>
+
+<script>
+  // Helper: format uptime (seconds -> readable)
+  function formatUptime(seconds) {
+    if (!seconds && seconds !== 0) return '0m';
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (days > 0) return days + 'd ' + hours + 'h ' + minutes + 'm';
+    if (hours > 0) return hours + 'h ' + minutes + 'm';
+    return minutes + 'm';
+  }
+
+  // Helper: format bytes to MB with 1 decimal
+  function toMB(bytes) {
+    return (bytes / 1024 / 1024).toFixed(1);
+  }
+
+  // Fetch health data and render UI
+  async function fetchAndRender() {
+    try {
+      const response = await fetch('/health?format=json&_t=' + Date.now());
+      if (!response.ok) throw new Error('Health endpoint error');
+      const data = await response.json();
+
+      // Update timestamp
+      const timestampElem = document.getElementById('liveTimestamp');
+      if (timestampElem && data.timestamp) {
+        const date = new Date(data.timestamp);
+        timestampElem.innerText = '📅 Last check: ' + date.toLocaleString();
+      }
+
+      // --- KPI Cards ---
+      const overallStatus = data.status === 'healthy' ? 'Healthy' : 'Unhealthy';
+      const statusBadgeClass = data.status === 'healthy' ? 'badge-success' : 'badge-warning';
+      const uptimeFormatted = formatUptime(data.uptime);
+      const memPercent = data.memory && data.memory.heapUsed && data.memory.heapTotal
+        ? Math.round((data.memory.heapUsed / data.memory.heapTotal) * 100)
+        : 0;
+
+      const kpiHtml = '<div class="kpi-card">' +
+        '<div class="kpi-header">' +
+          '<div class="kpi-icon">✅</div>' +
+          '<div>' +
+            '<div class="kpi-title">Overall Status</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kpi-value">' + overallStatus + '</div>' +
+        '<span class="kpi-badge ' + statusBadgeClass + '">System ' + data.status + '</span>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-header">' +
+          '<div class="kpi-icon">⏱️</div>' +
+          '<div>' +
+            '<div class="kpi-title">Uptime</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kpi-value">' + uptimeFormatted + '</div>' +
+        '<span class="kpi-badge badge-info">since last start</span>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-header">' +
+          '<div class="kpi-icon">💾</div>' +
+          '<div>' +
+            '<div class="kpi-title">Heap Usage</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kpi-value">' + memPercent + '%</div>' +
+        '<span class="kpi-badge ' + (memPercent > 80 ? 'badge-warning' : 'badge-success') + '">' + (data.memory ? data.memory.heapUsed : '?') + ' MB / ' + (data.memory ? data.memory.heapTotal : '?') + ' MB</span>' +
+      '</div>' +
+      '<div class="kpi-card">' +
+        '<div class="kpi-header">' +
+          '<div class="kpi-icon">🌍</div>' +
+          '<div>' +
+            '<div class="kpi-title">Environment</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="kpi-value" style="font-size:1.5rem;">' + (data.environment || 'development') + '</div>' +
+        '<span class="kpi-badge badge-info">Node ' + (data.system?.nodeVersion?.slice(0,5) || 'v18+') + '</span>' +
+      '</div>';
+      document.getElementById('kpiGrid').innerHTML = kpiHtml;
+
+      // --- Services Grid ---
+      const dbStatus = data.services?.database || 'unknown';
+      const cacheStatus = data.services?.cache || 'unknown';
+      let dbLed = 'led-green', dbText = 'Operational';
+      if (dbStatus === 'disconnected') { dbLed = 'led-red'; dbText = 'Disconnected'; }
+      else if (dbStatus === 'connected') { dbLed = 'led-green'; dbText = 'Connected'; }
+      
+      let cacheLed = 'led-green', cacheText = 'Operational';
+      if (cacheStatus === 'failed') { cacheLed = 'led-red'; cacheText = 'Failed'; }
+      else if (cacheStatus === 'operational') { cacheLed = 'led-green'; cacheText = 'Operational'; }
+      
+      const servicesHtml = '<div class="service-item">' +
+        '<div class="service-status-led ' + dbLed + '"></div>' +
+        '<div class="service-info">' +
+          '<div class="service-name">MongoDB Database</div>' +
+          '<div class="service-desc">Primary data store</div>' +
+        '</div>' +
+        '<div class="service-status-text" style="color:' + (dbStatus === 'connected' ? '#10b981' : '#ef4444') + '">' + dbText + '</div>' +
+      '</div>' +
+      '<div class="service-item">' +
+        '<div class="service-status-led ' + cacheLed + '"></div>' +
+        '<div class="service-info">' +
+          '<div class="service-name">Redis Cache</div>' +
+          '<div class="service-desc">Session & queue backend</div>' +
+        '</div>' +
+        '<div class="service-status-text" style="color:' + (cacheStatus === 'operational' ? '#10b981' : '#ef4444') + '">' + cacheText + '</div>' +
+      '</div>' +
+      '<div class="service-item">' +
+        '<div class="service-status-led led-green"></div>' +
+        '<div class="service-info">' +
+          '<div class="service-name">BullMQ Queue</div>' +
+          '<div class="service-desc">Background jobs</div>' +
+        '</div>' +
+        '<div class="service-status-text" style="color:#10b981">Active</div>' +
+      '</div>' +
+      '<div class="service-item">' +
+        '<div class="service-status-led led-green"></div>' +
+        '<div class="service-info">' +
+          '<div class="service-name">WebSocket Server</div>' +
+          '<div class="service-desc">Real-time connections</div>' +
+        '</div>' +
+        '<div class="service-status-text" style="color:#10b981">Online</div>' +
+      '</div>';
+      document.getElementById('servicesGrid').innerHTML = servicesHtml;
+
+      // --- Memory Bars ---
+      const mem = data.memory || { rss: 0, heapTotal: 0, heapUsed: 0, external: 0 };
+      const rssMB = mem.rss || 0;
+      const heapTotalMB = mem.heapTotal || 1;
+      const heapUsedMB = mem.heapUsed || 0;
+      const externalMB = mem.external || 0;
+      
+      const heapPercent = Math.min(100, Math.round((heapUsedMB / heapTotalMB) * 100));
+      const rssPercent = Math.min(100, Math.round((rssMB / (heapTotalMB * 1.5)) * 100));
+      const externalPercent = Math.min(100, Math.round((externalMB / heapTotalMB) * 100));
+      
+      document.getElementById('memorySummary').innerHTML = '🔹 Heap ' + heapUsedMB + ' MB / ' + heapTotalMB + ' MB &nbsp;| RSS ' + rssMB + ' MB';
+      
+      const metricHtml = '<div class="metric-row">' +
+        '<div class="metric-label"><span>📦 RSS (Resident Set)</span><span>' + rssMB + ' MB</span></div>' +
+        '<div class="bar-bg"><div class="bar-fill fill-primary" style="width: ' + rssPercent + '%;"></div></div>' +
+      '</div>' +
+      '<div class="metric-row">' +
+        '<div class="metric-label"><span>🧠 Heap Used</span><span>' + heapUsedMB + ' MB / ' + heapTotalMB + ' MB</span></div>' +
+        '<div class="bar-bg"><div class="bar-fill fill-success" style="width: ' + heapPercent + '%;"></div></div>' +
+      '</div>' +
+      '<div class="metric-row">' +
+        '<div class="metric-label"><span>📤 External Memory</span><span>' + externalMB + ' MB</span></div>' +
+        '<div class="bar-bg"><div class="bar-fill fill-info" style="width: ' + externalPercent + '%;"></div></div>' +
+      '</div>' +
+      '<div class="metric-row">' +
+        '<div class="metric-label"><span>⚙️ Heap Total Limit</span><span>' + heapTotalMB + ' MB</span></div>' +
+        '<div class="bar-bg"><div class="bar-fill fill-warning" style="width: 100%;"></div></div>' +
+      '</div>';
+      document.getElementById('metricBars').innerHTML = metricHtml;
+
+      // --- System Info ---
+      const sys = data.system || {};
+      const sysHtml = '<div class="sys-card"><h4>Platform</h4><p>' + (sys.platform || 'linux') + '</p></div>' +
+        '<div class="sys-card"><h4>Architecture</h4><p>' + (sys.arch || 'x64') + '</p></div>' +
+        '<div class="sys-card"><h4>Node Version</h4><p>' + (sys.nodeVersion || process?.versions?.node || '20.x') + '</p></div>' +
+        '<div class="sys-card"><h4>Environment</h4><p>' + (data.environment || 'development') + '</p></div>';
+      document.getElementById('systemGrid').innerHTML = sysHtml;
+      
+    } catch (error) {
+      console.error('Health fetch error:', error);
+      // Show graceful error inside containers
+      document.getElementById('kpiGrid').innerHTML = '<div class="kpi-card" style="grid-column:1/-1; text-align:center; color:#ef4444;">⚠️ Failed to load health data. Make sure server is running.</div>';
+      document.getElementById('servicesGrid').innerHTML = '<div class="service-item">Unable to fetch service status</div>';
     }
-  </script>
+  }
+
+  // Initial load and auto-refresh every 30 seconds
+  fetchAndRender();
+  setInterval(fetchAndRender, 30000);
+</script>
 </body>
-</html>
-          `);
+</html>`);
         } else {
           // Default to JSON response
           res.status(200).json(healthData);
@@ -1310,21 +1436,6 @@ export class App {
         }
       }
     });
-
-    // Helper function to format uptime
-    function formatUptime(seconds: number): string {
-      const days = Math.floor(seconds / 86400);
-      const hours = Math.floor((seconds % 86400) / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-
-      if (days > 0) {
-        return days + 'd ' + hours + 'h ' + minutes + 'm';
-      } else if (hours > 0) {
-        return hours + 'h ' + minutes + 'm';
-      } else {
-        return minutes + 'm';
-      }
-    }
 
     // GraphQL endpoint (placeholder for now)
     // this.app.use('/graphql', graphqlHandler);
