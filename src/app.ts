@@ -22,6 +22,7 @@ import { cacheService } from './services/cacheService';
 import { websocketService } from './services/websocketService';
 import { EmailJobs } from './jobs/email.job';
 import { CleanupJobs } from './jobs/cleanup.job';
+import path from 'path';
 
 export class App {
   public app: Application;
@@ -96,6 +97,9 @@ export class App {
     // Swagger docs
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
+    this.app.use(express.static(path.join(__dirname, '../public')));
+    this.app.use('/icons', express.static(path.join(__dirname, '../public/icons')));
+
     // Root landing page for project and docs
     this.app.get('/', (_req: Request, res: Response) => {
       res.send(`<!DOCTYPE html>
@@ -105,6 +109,14 @@ export class App {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Node.js Backend Toolkit | Enterprise-Grade API Server</title>
   <meta name="description" content="Production-ready Node.js backend with authentication, payments, real-time features, monitoring, and enterprise architecture.">
+
+  
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/site.webmanifest">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
@@ -841,6 +853,13 @@ export class App {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>🩺 System Health Dashboard | Node.js Backend Toolkit</title>
   <meta name="description" content="Real-time system health monitoring dashboard with service status, memory metrics, and uptime tracking.">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/site.webmanifest">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
