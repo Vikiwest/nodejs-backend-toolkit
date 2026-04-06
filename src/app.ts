@@ -829,8 +829,10 @@ export class App {
           res.status(200).json(healthData);
         } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
           // Use these variables in the HTML template
-          // const uptimeFormatted = this.formatUptime(healthData.uptime);
-          // const memoryUsagePercent = Math.round((memoryMB.heapUsed / memoryMB.heapTotal) * 100);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const uptimeFormatted = this.formatUptime(healthData.uptime);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const memoryUsagePercent = Math.round((memoryMB.heapUsed / memoryMB.heapTotal) * 100);
 
           res.send(`<!DOCTYPE html>
 <html lang="en">
