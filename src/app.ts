@@ -571,7 +571,7 @@ export class App {
     <div class="nav-links">
       <a href="/api-docs">📘 API Docs</a>
       <a href="/health?dashboard=true">🩺 Health</a>
-      <a href="/metrics">📊 Metrics</a>
+      <a href="/metrics?dashboard=true">📊 Metrics</a>
       <a href="https://github.com/Vikiwest/nodejs-backend-toolkit" target="_blank">🐙 GitHub</a>
     </div>
   </nav>
