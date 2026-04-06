@@ -27,7 +27,7 @@ router.use(requireRole('admin', 'super_admin'));
 
 /**
  * @swagger
- * /api/audit:
+ * /audit:
  *   get:
  *     summary: Get audit logs
  *     description: Paginated audit logs with advanced filtering
@@ -94,7 +94,7 @@ router.get('/', validate(auditQuerySchema), AuditController.getAuditLogs);
 
 /**
  * @swagger
- * /api/audit/{id}:
+ * /audit/{id}:
  *   get:
  *     summary: Get specific audit log
  *     description: Get single audit log by ID
@@ -143,7 +143,7 @@ router.get('/:id', AuditController.getAuditLogById);
 
 /**
  * @swagger
- * /api/audit/stats:
+ * /audit/stats:
  *   get:
  *     summary: Get audit statistics
  *     description: Action/resource counts and trends
@@ -182,7 +182,7 @@ router.get('/stats', AuditController.getAuditStats);
 
 /**
  * @swagger
- * /api/audit/export:
+ * /audit/export:
  *   get:
  *     summary: Export audit logs
  *     description: Download filtered audit logs as CSV
@@ -258,7 +258,7 @@ router.get('/export', AuditController.exportAuditLogs);
 
 /**
  * @swagger
- * /api/audit/user/{userId}:
+ * /audit/user/{userId}:
  *   get:
  *     summary: Get logs for specific user
  *     description: Get all audit logs for specific user
@@ -320,7 +320,7 @@ router.get(
 
 /**
  * @swagger
- * /api/audit/resource/{type}/{id}:
+ * /audit/resource/{type}/{id}:
  *   get:
  *     summary: Get logs for specific resource
  *     description: Get audit logs for specific resource
@@ -386,7 +386,7 @@ router.get(
 
 /**
  * @swagger
- * /api/audit/cleanup:
+ * /audit/cleanup:
  *   delete:
  *     summary: Clean old audit logs
  *     description: Delete audit logs older than specified days (admin only)

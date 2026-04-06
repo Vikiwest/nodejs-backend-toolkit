@@ -26,7 +26,7 @@ import { AuthRequest } from '../types';
 
 /**
  * @swagger
- * /api/auth/register:
+ * /auth/register:
  *   post:
  *     summary: User registration
  *     tags: [Auth-Basic]
@@ -101,7 +101,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/login:
+   * /auth/login:
    *   post:
    *     summary: User login
    *     tags: [Auth-Basic]
@@ -167,7 +167,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/logout:
+   * /auth/logout:
    *   post:
    *     summary: User logout
    *     tags: [Auth-Basic]
@@ -193,7 +193,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/refresh-token:
+   * /auth/refresh-token:
    *   post:
    *     summary: Refresh JWT token
    *     tags: [Auth-Basic]
@@ -244,7 +244,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/verify-email/{token}:
+   * /auth/verify-email/{token}:
    *   post:
    *     summary: Verify email address
    *     tags: [Auth-Verification]
@@ -297,7 +297,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/resend-verification:
+   * /auth/resend-verification:
    *   post:
    *     summary: Resend verification email
    *     tags: [Auth-Verification]
@@ -354,7 +354,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/forgot-password:
+   * /auth/forgot-password:
    *   post:
    *     summary: Request password reset
    *     tags: [Auth-Password]
@@ -395,7 +395,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/reset-password:
+   * /auth/reset-password:
    *   post:
    *     summary: Reset password with token
    *     tags: [Auth-Password]
@@ -455,7 +455,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/change-password:
+   * /auth/change-password:
    *   post:
    *     summary: Change password (authenticated)
    *     tags: [Auth-Password]
@@ -516,7 +516,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/enable-2fa:
+   * /auth/enable-2fa:
    *   post:
    *     summary: Enable 2FA
    *     tags: [Auth-2FA]
@@ -546,7 +546,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/verify-2fa:
+   * /auth/verify-2fa:
    *   post:
    *     summary: Verify 2FA token
    *     tags: [Auth-2FA]
@@ -594,7 +594,7 @@ export class AuthController {
 
   /**
    * @swagger
-   * /api/auth/disable-2fa:
+   * /auth/disable-2fa:
    *   post:
    *     summary: Disable 2FA
    *     tags: [Auth-2FA]

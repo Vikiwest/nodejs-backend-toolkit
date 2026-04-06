@@ -12,12 +12,8 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${config.port}/api`,
-        description: 'Development server',
-      },
-      {
         url: '/api',
-        description: 'Production server',
+        description: 'API Server',
       },
     ],
     tags: [
