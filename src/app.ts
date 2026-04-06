@@ -102,9 +102,9 @@ export class App {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Node.js Backend Toolkit | Enterprise-Grade API Server</title>
-  <meta name="description" content="Production-ready Node.js backend with authentication, payments, real-time features, monitoring, and enterprise architecture. Built for scale, security, and performance.">
+  <meta name="description" content="Production-ready Node.js backend with authentication, payments, real-time features, monitoring, and enterprise architecture.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
@@ -123,7 +123,6 @@ export class App {
       overflow-x: hidden;
     }
 
-    /* Modern gradient background with subtle noise */
     .bg-gradient {
       position: fixed;
       top: 0;
@@ -153,7 +152,7 @@ export class App {
       position: relative;
     }
 
-    /* Navigation */
+    /* Navigation - Responsive */
     .navbar {
       padding: 1.5rem 0;
       display: flex;
@@ -185,6 +184,7 @@ export class App {
       display: flex;
       gap: 2rem;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .nav-links a {
@@ -199,7 +199,7 @@ export class App {
       color: #60a5fa;
     }
 
-    /* Hero Section */
+    /* Hero Section - Responsive */
     .hero {
       padding: 5rem 0 4rem;
       text-align: center;
@@ -221,7 +221,7 @@ export class App {
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-size: clamp(2rem, 6vw, 4.5rem);
       font-weight: 800;
       letter-spacing: -0.02em;
       line-height: 1.2;
@@ -233,10 +233,11 @@ export class App {
     }
 
     .hero-description {
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 4vw, 1.2rem);
       color: #9ca3af;
       max-width: 700px;
       margin: 0 auto 2rem;
+      padding: 0 1rem;
     }
 
     .button-group {
@@ -247,43 +248,34 @@ export class App {
       margin-bottom: 3rem;
     }
 
-    .btn-primary {
-      background: linear-gradient(95deg, #2563eb, #3b82f6);
-      border: none;
-      padding: 0.75rem 1.8rem;
+    .btn-primary, .btn-secondary {
+      padding: 0.75rem 1.5rem;
       border-radius: 40px;
       font-weight: 600;
-      font-size: 0.95rem;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+      font-size: 0.9rem;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(95deg, #2563eb, #3b82f6);
+      color: white;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.3);
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 12px 28px rgba(37,99,235,0.4);
-      background: linear-gradient(95deg, #1d4ed8, #2563eb);
     }
 
     .btn-secondary {
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255,255,255,0.15);
-      padding: 0.75rem 1.8rem;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.95rem;
       color: #e2e8f0;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
     .btn-secondary:hover {
@@ -292,14 +284,14 @@ export class App {
       color: white;
     }
 
-    /* Status Dashboard */
+    /* Status Dashboard - Responsive */
     .status-card {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(12px);
       border-radius: 28px;
       border: 1px solid rgba(255,255,255,0.08);
-      padding: 1rem 1.8rem;
-      display: inline-flex;
+      padding: 1rem 1.5rem;
+      display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: center;
@@ -329,7 +321,7 @@ export class App {
       50% { opacity: 0.6; transform: scale(1.1);}
     }
 
-    /* Stats row */
+    /* Stats row - Responsive */
     .stats-row {
       display: flex;
       justify-content: center;
@@ -340,24 +332,26 @@ export class App {
 
     .stat {
       text-align: center;
+      flex: 1;
+      min-width: 100px;
     }
 
     .stat-number {
-      font-size: 1.8rem;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
       font-weight: 800;
       color: white;
     }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: #6b7280;
     }
 
-    /* Features Grid */
+    /* Features Grid - Responsive */
     .section-title {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 5vw, 2rem);
       font-weight: 700;
       text-align: center;
       margin: 4rem 0 1rem;
@@ -371,11 +365,12 @@ export class App {
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
+      padding: 0 1rem;
     }
 
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.8rem;
       margin: 3rem 0;
     }
@@ -428,12 +423,12 @@ export class App {
       color: #90cdf4;
     }
 
-    /* Architecture block */
+    /* Architecture block - Responsive */
     .architecture-block {
       background: linear-gradient(135deg, rgba(12, 20, 35, 0.8), rgba(5, 10, 22, 0.9));
       border-radius: 36px;
       border: 1px solid rgba(59,130,246,0.2);
-      padding: 2.5rem;
+      padding: 2rem;
       margin: 3rem 0;
     }
 
@@ -444,7 +439,7 @@ export class App {
 
     .arch-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 1rem;
     }
 
@@ -458,29 +453,34 @@ export class App {
 
     .arch-item strong {
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin-bottom: 0.3rem;
       color: #e0e7ff;
     }
 
     .arch-item span {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #7f8ea3;
     }
 
-    /* CTA Section */
+    /* CTA Section - Responsive */
     .cta-section {
       text-align: center;
       margin: 5rem 0 4rem;
       background: radial-gradient(ellipse at 50% 50%, rgba(37,99,235,0.15), transparent);
-      padding: 2.5rem;
+      padding: 2rem 1.5rem;
       border-radius: 48px;
     }
 
-    /* Footer */
+    .cta-section h3 {
+      font-size: clamp(1.3rem, 5vw, 1.8rem);
+      margin-bottom: 0.75rem;
+    }
+
+    /* Footer - Responsive */
     .footer {
       border-top: 1px solid rgba(255,255,255,0.05);
-      padding: 2.5rem 0 2rem;
+      padding: 2rem 0 2rem;
       margin-top: 2rem;
       display: flex;
       justify-content: space-between;
@@ -492,7 +492,8 @@ export class App {
 
     .footer-links {
       display: flex;
-      gap: 2rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
     }
 
     .footer-links a {
@@ -505,32 +506,93 @@ export class App {
       color: #60a5fa;
     }
 
+    /* Responsive Breakpoints */
     @media (max-width: 768px) {
       .container {
-        padding: 0 1.2rem;
+        padding: 0 1rem;
       }
+      
       .navbar {
         flex-direction: column;
         text-align: center;
       }
+      
       .nav-links {
-        gap: 1.2rem;
+        justify-content: center;
+        gap: 1rem;
       }
+      
       .hero {
         padding: 2rem 0;
       }
+      
       .status-card {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.6rem;
+        align-items: stretch;
+        gap: 0.8rem;
       }
+      
+      .status-item {
+        justify-content: space-between;
+      }
+      
       .features-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
+      
+      .arch-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      }
+      
       .footer {
         flex-direction: column;
         align-items: center;
         text-align: center;
+      }
+      
+      .footer-links {
+        justify-content: center;
+      }
+      
+      .button-group {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 1rem;
+      }
+      
+      .btn-primary, .btn-secondary {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row {
+        gap: 1rem;
+      }
+      
+      .stat {
+        min-width: 80px;
+      }
+      
+      .stat-number {
+        font-size: 1rem;
+      }
+      
+      .feature {
+        padding: 1.2rem;
+      }
+      
+      .architecture-block {
+        padding: 1.2rem;
+      }
+      
+      .arch-item strong {
+        font-size: 0.75rem;
+      }
+      
+      .arch-item span {
+        font-size: 0.65rem;
       }
     }
 
@@ -593,7 +655,7 @@ export class App {
       <a href="/health?dashboard=true" class="btn-secondary">
         <span>✅</span> System Status
       </a>
-      <a href="/metrics" class="btn-secondary">
+      <a href="/metrics?dashboard=true" class="btn-secondary">
         <span>📈</span> Live Metrics
       </a>
     </div>
@@ -665,18 +727,18 @@ export class App {
     <div class="arch-grid">
       <div class="arch-item"><strong>Runtime</strong><span>Node.js 20+ / Express</span></div>
       <div class="arch-item"><strong>Language</strong><span>TypeScript</span></div>
-      <div class="arch-item"><strong>Database</strong><span>MongoDB + Mongoose ODM</span></div>
-      <div class="arch-item"><strong>Caching</strong><span>Redis (Upstash / self-hosted)</span></div>
+      <div class="arch-item"><strong>Database</strong><span>MongoDB + Mongoose</span></div>
+      <div class="arch-item"><strong>Caching</strong><span>Redis</span></div>
       <div class="arch-item"><strong>Job Queues</strong><span>BullMQ + Redis</span></div>
-      <div class="arch-item"><strong>Security</strong><span>Helmet, CORS, XSS, Rate-limit</span></div>
-      <div class="arch-item"><strong>Testing</strong><span>Jest / Supertest / E2E</span></div>
-      <div class="arch-item"><strong>Deployment</strong><span>Docker + PM2 / K8s ready</span></div>
+      <div class="arch-item"><strong>Security</strong><span>Helmet, CORS, XSS</span></div>
+      <div class="arch-item"><strong>Testing</strong><span>Jest / Supertest</span></div>
+      <div class="arch-item"><strong>Deployment</strong><span>Docker + PM2 / K8s</span></div>
     </div>
   </div>
 
   <!-- CTA for developers -->
   <div class="cta-section">
-    <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem;">Ready to integrate?</h3>
+    <h3>Ready to integrate?</h3>
     <p style="color:#a0b3ce; max-width: 500px; margin: 0 auto 1.8rem;">Explore the interactive Swagger documentation and test endpoints immediately.</p>
     <div class="button-group">
       <a href="/api-docs" class="btn-primary">📚 Swagger UI</a>
@@ -690,31 +752,30 @@ export class App {
     <div class="footer-links">
       <a href="/api-docs">Documentation</a>
       <a href="/health?dashboard=true">System Health</a>
-      <a href="/metrics">Prometheus Metrics</a>
+      <a href="/metrics?dashboard=true">Metrics</a>
       <a href="https://github.com/Vikiwest/nodejs-backend-toolkit" target="_blank">Contribute</a>
     </div>
   </footer>
 </div>
 
-<!-- Small script to fetch dynamic environment data (optional) -->
 <script>
   (function() {
-    // Update environment indicator and optionally fetch health status in real-time
-    const envSpan = document.querySelector('.status-item:first-child span:last-child');
-    if (envSpan) {
-      // we can optionally fetch from /health endpoint for live data, but it's static fallback
-      fetch('/health')
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.services) {
-            const dbSpan = document.querySelector('.status-item:first-child span:last-child');
-            const cacheSpan = document.querySelectorAll('.status-item span:last-child')[1];
-            if (dbSpan && data.services.database) dbSpan.innerText = data.services.database === 'connected' ? 'connected' : 'disconnected';
-            if (cacheSpan && data.services.cache) cacheSpan.innerText = data.services.cache === 'operational' ? 'operational' : 'degraded';
+    fetch('/health?format=json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.services) {
+          const statusItems = document.querySelectorAll('.status-item');
+          if (statusItems[0]) {
+            const dbSpan = statusItems[0].querySelector('span:last-child');
+            if (dbSpan) dbSpan.innerText = data.services.database === 'connected' ? 'connected' : 'disconnected';
           }
-        })
-        .catch(() => {});
-    }
+          if (statusItems[1]) {
+            const cacheSpan = statusItems[1].querySelector('span:last-child');
+            if (cacheSpan) cacheSpan.innerText = data.services.cache === 'operational' ? 'operational' : 'degraded';
+          }
+        }
+      })
+      .catch(() => {});
   })();
 </script>
 </body>
@@ -763,11 +824,14 @@ export class App {
           },
         };
 
-        // Serve dashboard if requested (prioritize explicit format parameter)
+        // Serve dashboard if requested
         if (req.query.format === 'json') {
-          // Explicitly requested JSON
           res.status(200).json(healthData);
         } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
+          // Use these variables in the HTML template
+          // const uptimeFormatted = this.formatUptime(healthData.uptime);
+          // const memoryUsagePercent = Math.round((memoryMB.heapUsed / memoryMB.heapTotal) * 100);
+
           res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -779,6 +843,7 @@ export class App {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
   <style>
+    /* Your existing styles here - they are already responsive */
     * {
       margin: 0;
       padding: 0;
@@ -794,7 +859,6 @@ export class App {
       padding: 2rem 1rem;
     }
 
-    /* Modern glassmorphism container */
     .dashboard-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -807,7 +871,7 @@ export class App {
     }
 
     .health-header h1 {
-      font-size: 2.5rem;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
       font-weight: 800;
       background: linear-gradient(135deg, #0f172a, #2563eb);
       -webkit-background-clip: text;
@@ -817,6 +881,8 @@ export class App {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .health-sub {
@@ -838,10 +904,19 @@ export class App {
       border: 1px solid rgba(37, 99, 235, 0.2);
     }
 
-    /* KPI Cards Grid */
+    .auto-refresh-badge {
+      font-size: 0.7rem;
+      background: #eef2ff;
+      border-radius: 20px;
+      padding: 0.2rem 0.8rem;
+      display: inline-block;
+      margin-left: 0.75rem;
+    }
+
+    /* KPI Cards Grid - Responsive */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
@@ -852,7 +927,7 @@ export class App {
       border-radius: 28px;
       padding: 1.5rem;
       border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
       transition: all 0.2s ease;
     }
 
@@ -867,6 +942,7 @@ export class App {
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
 
     .kpi-icon {
@@ -889,15 +965,16 @@ export class App {
     }
 
     .kpi-value {
-      font-size: 2.2rem;
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
       font-weight: 800;
       color: #0f172a;
       line-height: 1.2;
       margin-top: 0.25rem;
+      word-break: break-word;
     }
 
     .kpi-badge {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 500;
       padding: 0.2rem 0.7rem;
       border-radius: 30px;
@@ -905,25 +982,11 @@ export class App {
       margin-top: 0.5rem;
     }
 
-    .badge-success {
-      background: #10b98120;
-      color: #047857;
-      border: 1px solid #10b98140;
-    }
+    .badge-success { background: #10b98120; color: #047857; border: 1px solid #10b98140; }
+    .badge-warning { background: #f59e0b20; color: #b45309; border: 1px solid #f59e0b40; }
+    .badge-info { background: #3b82f620; color: #1e40af; border: 1px solid #3b82f640; }
 
-    .badge-warning {
-      background: #f59e0b20;
-      color: #b45309;
-      border: 1px solid #f59e0b40;
-    }
-
-    .badge-info {
-      background: #3b82f620;
-      color: #1e40af;
-      border: 1px solid #3b82f640;
-    }
-
-    /* Services Row */
+    /* Services Row - Responsive */
     .section-title {
       font-size: 1.3rem;
       font-weight: 600;
@@ -931,11 +994,12 @@ export class App {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
@@ -943,13 +1007,14 @@ export class App {
     .service-item {
       background: white;
       border-radius: 20px;
-      padding: 1rem 1.2rem;
+      padding: 1rem;
       display: flex;
       align-items: center;
       gap: 1rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
       border: 1px solid #e2e8f0;
       transition: all 0.2s;
+      flex-wrap: wrap;
     }
 
     .service-status-led {
@@ -957,7 +1022,6 @@ export class App {
       height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
     }
 
     .led-green { background: #10b981; box-shadow: 0 0 6px #10b981; }
@@ -983,7 +1047,7 @@ export class App {
       font-weight: 600;
     }
 
-    /* Memory section */
+    /* Memory section - Responsive */
     .memory-panel {
       background: white;
       border-radius: 28px;
@@ -998,6 +1062,7 @@ export class App {
       justify-content: space-between;
       align-items: baseline;
       flex-wrap: wrap;
+      gap: 0.5rem;
       margin-bottom: 1.5rem;
     }
 
@@ -1007,9 +1072,10 @@ export class App {
     }
 
     .memory-total {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #3b82f6;
       font-weight: 600;
+      word-break: break-word;
     }
 
     .metric-bars {
@@ -1030,6 +1096,8 @@ export class App {
       color: #334155;
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .bar-bg {
@@ -1051,7 +1119,7 @@ export class App {
     .fill-info { background: linear-gradient(90deg, #0891b2, #06b6d4); }
     .fill-warning { background: linear-gradient(90deg, #d97706, #f59e0b); }
 
-    /* System details */
+    /* System details - Responsive */
     .system-panel {
       background: white;
       border-radius: 28px;
@@ -1062,7 +1130,7 @@ export class App {
 
     .sys-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 1rem;
       margin-top: 0.5rem;
     }
@@ -1085,11 +1153,12 @@ export class App {
 
     .sys-card p {
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #0f172a;
+      word-break: break-word;
     }
 
-    /* Action buttons */
+    /* Action buttons - Responsive */
     .action-bar {
       display: flex;
       justify-content: center;
@@ -1101,7 +1170,7 @@ export class App {
     .action-btn {
       background: white;
       border: 1px solid #cbd5e1;
-      padding: 0.7rem 1.5rem;
+      padding: 0.7rem 1.2rem;
       border-radius: 40px;
       font-weight: 500;
       font-size: 0.85rem;
@@ -1119,16 +1188,6 @@ export class App {
       transform: translateY(-1px);
     }
 
-    .action-btn-primary {
-      background: #0f172a;
-      color: white;
-      border: none;
-    }
-
-    .action-btn-primary:hover {
-      background: #1e293b;
-    }
-
     /* Footer */
     .footer-note {
       text-align: center;
@@ -1139,25 +1198,87 @@ export class App {
       border-top: 1px solid #cbd5e180;
     }
 
-    /* Responsive */
-    @media (max-width: 640px) {
-      body { padding: 1rem; }
-      .kpi-value { font-size: 1.6rem; }
-      .kpi-card { padding: 1rem; }
+    /* Responsive Breakpoints */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .kpi-value {
+        font-size: 1.5rem;
+      }
+      
+      .kpi-card {
+        padding: 1rem;
+      }
+      
+      .service-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .service-status-led {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .memory-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .sys-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      }
+      
+      .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .action-btn {
+        justify-content: center;
+      }
     }
 
-    /* Refresh pulse animation */
-    @keyframes softPulse {
-      0% { opacity: 0.7; }
-      100% { opacity: 1; }
+    @media (max-width: 480px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .sys-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .health-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .timestamp-badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 1rem;
+      }
+      
+      .auto-refresh-badge {
+        display: block;
+        margin: 0.5rem auto 0;
+        width: fit-content;
+      }
     }
-    .auto-refresh-badge {
-      font-size: 0.7rem;
-      background: #eef2ff;
-      border-radius: 20px;
-      padding: 0.2rem 0.8rem;
-      display: inline-block;
-      margin-left: 0.75rem;
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .kpi-card, .service-item, .memory-panel, .system-panel {
+      animation: fadeIn 0.5s ease-out;
     }
   </style>
 </head>
@@ -1169,8 +1290,10 @@ export class App {
       <span>🩺</span> System Health Dashboard
     </h1>
     <div class="health-sub">Real-time monitoring & service observability</div>
-    <div class="timestamp-badge" id="liveTimestamp">Loading timestamp...</div>
-    <div class="auto-refresh-badge">⟳ Auto‑refresh every 30s</div>
+    <div>
+      <div class="timestamp-badge" id="liveTimestamp">Loading timestamp...</div>
+      <div class="auto-refresh-badge">⟳ Auto‑refresh every 30s</div>
+    </div>
   </div>
 
   <!-- KPI Cards will be injected dynamically -->
@@ -1200,7 +1323,7 @@ export class App {
   <!-- Action Buttons -->
   <div class="action-bar">
     <a href="/health?format=json" class="action-btn">📄 Raw JSON</a>
-    <a href="/metrics" class="action-btn">📊 Metrics Dashboard</a>
+    <a href="/metrics?dashboard=true" class="action-btn">📊 Metrics Dashboard</a>
     <a href="/api-docs" class="action-btn">📘 API Docs</a>
     <a href="/" class="action-btn">🏠 Back to Home</a>
   </div>
@@ -1210,7 +1333,6 @@ export class App {
 </div>
 
 <script>
-  // Helper: format uptime (seconds -> readable)
   function formatUptime(seconds) {
     if (!seconds && seconds !== 0) return '0m';
     const days = Math.floor(seconds / 86400);
@@ -1221,26 +1343,18 @@ export class App {
     return minutes + 'm';
   }
 
-  // Helper: format bytes to MB with 1 decimal
-  function toMB(bytes) {
-    return (bytes / 1024 / 1024).toFixed(1);
-  }
-
-  // Fetch health data and render UI
   async function fetchAndRender() {
     try {
       const response = await fetch('/health?format=json&_t=' + Date.now());
       if (!response.ok) throw new Error('Health endpoint error');
       const data = await response.json();
 
-      // Update timestamp
       const timestampElem = document.getElementById('liveTimestamp');
       if (timestampElem && data.timestamp) {
         const date = new Date(data.timestamp);
         timestampElem.innerText = '📅 Last check: ' + date.toLocaleString();
       }
 
-      // --- KPI Cards ---
       const overallStatus = data.status === 'healthy' ? 'Healthy' : 'Unhealthy';
       const statusBadgeClass = data.status === 'healthy' ? 'badge-success' : 'badge-warning';
       const uptimeFormatted = formatUptime(data.uptime);
@@ -1251,9 +1365,7 @@ export class App {
       const kpiHtml = '<div class="kpi-card">' +
         '<div class="kpi-header">' +
           '<div class="kpi-icon">✅</div>' +
-          '<div>' +
-            '<div class="kpi-title">Overall Status</div>' +
-          '</div>' +
+          '<div><div class="kpi-title">Overall Status</div></div>' +
         '</div>' +
         '<div class="kpi-value">' + overallStatus + '</div>' +
         '<span class="kpi-badge ' + statusBadgeClass + '">System ' + data.status + '</span>' +
@@ -1261,9 +1373,7 @@ export class App {
       '<div class="kpi-card">' +
         '<div class="kpi-header">' +
           '<div class="kpi-icon">⏱️</div>' +
-          '<div>' +
-            '<div class="kpi-title">Uptime</div>' +
-          '</div>' +
+          '<div><div class="kpi-title">Uptime</div></div>' +
         '</div>' +
         '<div class="kpi-value">' + uptimeFormatted + '</div>' +
         '<span class="kpi-badge badge-info">since last start</span>' +
@@ -1271,9 +1381,7 @@ export class App {
       '<div class="kpi-card">' +
         '<div class="kpi-header">' +
           '<div class="kpi-icon">💾</div>' +
-          '<div>' +
-            '<div class="kpi-title">Heap Usage</div>' +
-          '</div>' +
+          '<div><div class="kpi-title">Heap Usage</div></div>' +
         '</div>' +
         '<div class="kpi-value">' + memPercent + '%</div>' +
         '<span class="kpi-badge ' + (memPercent > 80 ? 'badge-warning' : 'badge-success') + '">' + (data.memory ? data.memory.heapUsed : '?') + ' MB / ' + (data.memory ? data.memory.heapTotal : '?') + ' MB</span>' +
@@ -1281,16 +1389,13 @@ export class App {
       '<div class="kpi-card">' +
         '<div class="kpi-header">' +
           '<div class="kpi-icon">🌍</div>' +
-          '<div>' +
-            '<div class="kpi-title">Environment</div>' +
-          '</div>' +
+          '<div><div class="kpi-title">Environment</div></div>' +
         '</div>' +
-        '<div class="kpi-value" style="font-size:1.5rem;">' + (data.environment || 'development') + '</div>' +
+        '<div class="kpi-value" style="font-size:1.3rem;">' + (data.environment || 'development') + '</div>' +
         '<span class="kpi-badge badge-info">Node ' + (data.system?.nodeVersion?.slice(0,5) || 'v18+') + '</span>' +
       '</div>';
       document.getElementById('kpiGrid').innerHTML = kpiHtml;
 
-      // --- Services Grid ---
       const dbStatus = data.services?.database || 'unknown';
       const cacheStatus = data.services?.cache || 'unknown';
       let dbLed = 'led-green', dbText = 'Operational';
@@ -1335,7 +1440,6 @@ export class App {
       '</div>';
       document.getElementById('servicesGrid').innerHTML = servicesHtml;
 
-      // --- Memory Bars ---
       const mem = data.memory || { rss: 0, heapTotal: 0, heapUsed: 0, external: 0 };
       const rssMB = mem.rss || 0;
       const heapTotalMB = mem.heapTotal || 1;
@@ -1366,37 +1470,32 @@ export class App {
       '</div>';
       document.getElementById('metricBars').innerHTML = metricHtml;
 
-      // --- System Info ---
       const sys = data.system || {};
       const sysHtml = '<div class="sys-card"><h4>Platform</h4><p>' + (sys.platform || 'linux') + '</p></div>' +
         '<div class="sys-card"><h4>Architecture</h4><p>' + (sys.arch || 'x64') + '</p></div>' +
-        '<div class="sys-card"><h4>Node Version</h4><p>' + (sys.nodeVersion || process?.versions?.node || '20.x') + '</p></div>' +
+        '<div class="sys-card"><h4>Node Version</h4><p>' + (sys.nodeVersion || '20.x') + '</p></div>' +
         '<div class="sys-card"><h4>Environment</h4><p>' + (data.environment || 'development') + '</p></div>';
       document.getElementById('systemGrid').innerHTML = sysHtml;
       
     } catch (error) {
       console.error('Health fetch error:', error);
-      // Show graceful error inside containers
       document.getElementById('kpiGrid').innerHTML = '<div class="kpi-card" style="grid-column:1/-1; text-align:center; color:#ef4444;">⚠️ Failed to load health data. Make sure server is running.</div>';
       document.getElementById('servicesGrid').innerHTML = '<div class="service-item">Unable to fetch service status</div>';
     }
   }
 
-  // Initial load and auto-refresh every 30 seconds
   fetchAndRender();
   setInterval(fetchAndRender, 30000);
 </script>
 </body>
 </html>`);
         } else {
-          // Default to JSON response
           res.status(200).json(healthData);
         }
       } catch (error) {
         logger.error('Health check failed', error as Error);
 
         if (req.query.format === 'json') {
-          // Explicitly requested JSON error
           res.status(503).json({
             success: false,
             status: 'unhealthy',
@@ -1404,17 +1503,20 @@ export class App {
             error: 'Service unavailable',
           });
         } else if (req.query.dashboard === 'true' || req.headers.accept?.includes('text/html')) {
-          res.status(503).send(`
-<!DOCTYPE html>
+          res.status(503).send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>❌ System Health - Error</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f8fafc; }
+    body { font-family: 'Inter', sans-serif; text-align: center; padding: 50px; background: #f8fafc; }
     .error { color: #ef4444; font-size: 2rem; margin: 20px 0; }
     .message { color: #64748b; font-size: 1.1rem; }
+    @media (max-width: 640px) {
+      body { padding: 20px; }
+      .error { font-size: 1.5rem; }
+    }
   </style>
 </head>
 <body>
@@ -1424,8 +1526,7 @@ export class App {
   <br>
   <a href="/health?format=json">View JSON Response</a> | <a href="/">Back to Home</a>
 </body>
-</html>
-          `);
+</html>`);
         } else {
           res.status(503).json({
             success: false,
@@ -1437,9 +1538,6 @@ export class App {
       }
     });
 
-    // GraphQL endpoint (placeholder for now)
-    // this.app.use('/graphql', graphqlHandler);
-
     // 404 handler
     this.app.use((req: Request, res: Response) => {
       res.status(404).json({
@@ -1448,6 +1546,20 @@ export class App {
         timestamp: new Date().toISOString(),
       });
     });
+  }
+
+  private formatUptime(seconds: number): string {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (days > 0) {
+      return days + 'd ' + hours + 'h ' + minutes + 'm';
+    } else if (hours > 0) {
+      return hours + 'h ' + minutes + 'm';
+    } else {
+      return minutes + 'm';
+    }
   }
 
   private setupErrorHandling(): void {
