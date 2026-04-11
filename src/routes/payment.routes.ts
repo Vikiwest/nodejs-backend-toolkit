@@ -31,7 +31,7 @@ router.use(authMiddleware());
 
 /**
  * @swagger
- * /api/payments/create-intent:
+ * /payments/create-intent:
  *   post:
  *     summary: Create payment intent
  *     description: Create Stripe payment intent for one-time payment
@@ -62,7 +62,7 @@ router.post('/create-intent', validate(paymentIntentSchema), PaymentController.c
 
 /**
  * @swagger
- * /api/payments/confirm:
+ * /payments/confirm:
  *   post:
  *     summary: Confirm payment
  *     description: Confirm payment using Stripe client secret or ID
@@ -87,7 +87,7 @@ router.post('/confirm', validate(confirmPaymentSchema), PaymentController.confir
 
 /**
  * @swagger
- * /api/payments:
+ * /payments:
  *   get:
  *     summary: Get user's payments
  *     description: Get payment history for authenticated user
@@ -124,7 +124,7 @@ router.get(
 
 /**
  * @swagger
- * /api/payments/history:
+ * /payments/history:
  *   get:
  *     summary: Get user payments history
  *     tags: [Payment]
@@ -145,7 +145,7 @@ router.get(
 
 /**
  * @swagger
- * /api/payments/{id}:
+ * /payments/{id}:
  *   get:
  *     summary: Get payment details
  *     description: Get specific payment details by ID
@@ -173,7 +173,7 @@ router.get('/:id', PaymentController.getPayment);
 
 /**
  * @swagger
- * /api/payments/user/{userId}:
+ * /payments/user/{userId}:
  *   get:
  *     summary: Get specific user payments
  *     description: Get payment history for a specific user (admin)

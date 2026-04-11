@@ -4,6 +4,8 @@ import config from '../config/env';
 
 const router = Router();
 
+console.log('🔵 MONITORING ROUTES FILE IS BEING LOADED');
+
 // Simple stubs for health checks
 const checkDatabase = async () => true;
 const checkRedis = async () => true;
@@ -12,7 +14,7 @@ const getCacheStats = () => ({ hits: 0, misses: 0, connected: true });
 
 /**
  * @swagger
- * /health:
+ * /monitoring/health:
  *   get:
  *     summary: Basic health check
  *     description: Simple OK response for load balancers.
@@ -34,13 +36,14 @@ const getCacheStats = () => ({ hits: 0, misses: 0, connected: true });
 router.get(
   '/health',
   asyncHandler(async (req, res) => {
+    console.log('✅ /health endpoint hit');
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
   })
 );
 
 /**
  * @swagger
- * /health/detailed:
+ * /monitoring/health/detailed:
  *   get:
  *     summary: Detailed health check
  *     description: Full system health with services status.
@@ -54,6 +57,7 @@ router.get(
 router.get(
   '/health/detailed',
   asyncHandler(async (req, res) => {
+    console.log('✅ /health/detailed endpoint hit');
     const [db, redis, queue] = await Promise.all([checkDatabase(), checkRedis(), checkQueue()]);
 
     const health = {
@@ -75,7 +79,7 @@ router.get(
 
 /**
  * @swagger
- * /metrics:
+ * /monitoring/metrics:
  *   get:
  *     summary: Prometheus metrics
  *     tags: [Monitoring]
@@ -90,6 +94,7 @@ router.get(
 router.get(
   '/metrics',
   asyncHandler(async (req, res: Response) => {
+    console.log('✅ /metrics endpoint hit');
     res.set('Content-Type', 'text/plain');
     res.send(
       `
@@ -107,7 +112,7 @@ node_memory_usage_bytes{type="external"} ${process.memoryUsage().external}
 
 /**
  * @swagger
- * /ready:
+ * /monitoring/ready:
  *   get:
  *     summary: Readiness probe
  *     tags: [Monitoring]
@@ -118,6 +123,7 @@ node_memory_usage_bytes{type="external"} ${process.memoryUsage().external}
 router.get(
   '/ready',
   asyncHandler(async (req, res) => {
+    console.log('✅ /ready endpoint hit');
     res.status(200).json({ status: 'ready' });
   })
 );
@@ -135,13 +141,14 @@ router.get(
 router.get(
   '/live',
   asyncHandler(async (req, res) => {
+    console.log('✅ /live endpoint hit');
     res.status(200).json({ status: 'live' });
   })
 );
 
 /**
  * @swagger
- * /api/monitoring/redis:
+ * /monitoring/redis:
  *   get:
  *     summary: Redis status
  *     tags: [Monitoring]
@@ -161,7 +168,7 @@ router.get(
 
 /**
  * @swagger
- * /api/monitoring/mongodb:
+ * /monitoring/mongodb:
  *   get:
  *     summary: MongoDB status
  *     tags: [Monitoring]
@@ -181,7 +188,7 @@ router.get(
 
 /**
  * @swagger
- * /api/monitoring/queue:
+ * /monitoring/queue:
  *   get:
  *     summary: Queue status
  *     tags: [Monitoring]
@@ -201,7 +208,7 @@ router.get(
 
 /**
  * @swagger
- * /api/monitoring/cache-stats:
+ * /monitoring/cache-stats:
  *   get:
  *     summary: Cache statistics
  *     tags: [Monitoring]

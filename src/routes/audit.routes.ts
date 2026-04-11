@@ -30,7 +30,9 @@ router.use(requireRole('admin', 'super_admin'));
  * /audit:
  *   get:
  *     summary: Get audit logs
- *     description: Paginated audit logs with advanced filtering
+ *     description: |
+ *       Paginated audit logs with advanced filtering.
+ *
  *     tags: [Audit]
  *     security:
  *       - bearerAuth: []
@@ -64,6 +66,7 @@ router.use(requireRole('admin', 'super_admin'));
  *         schema:
  *           type: string
  *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Filter by user ID
  *       - in: query
  *         name: action
  *         schema:
@@ -84,62 +87,13 @@ router.use(requireRole('admin', 'super_admin'));
  *           format: date
  *     responses:
  *       200:
- *         description: Audit logs
+ *         description: Audit logs with _id field for individual lookups
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/PaginatedResponse'
  */
 router.get('/', validate(auditQuerySchema), AuditController.getAuditLogs);
-
-/**
- * @swagger
- * /audit/{id}:
- *   get:
- *     summary: Get specific audit log
- *     description: Get single audit log by ID
- *     tags: [Audit]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Audit log ID
- *     responses:
- *       200:
- *         description: Audit log details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     _id:
- *                       type: string
- *                     userId:
- *                       type: string
- *                     action:
- *                       type: string
- *                     resource:
- *                       type: string
- *                     resourceId:
- *                       type: string
- *                     changes:
- *                       type: object
- *                     timestamp:
- *                       type: string
- *                       format: date-time
- *       404:
- *         description: Audit log not found
- */
-router.get('/:id', AuditController.getAuditLogById);
 
 /**
  * @swagger
@@ -255,6 +209,84 @@ router.get('/stats', AuditController.getAuditStats);
  *               type: array
  */
 router.get('/export', AuditController.exportAuditLogs);
+
+/**
+ * @swagger
+ * /audit/{id}:
+ *   get:
+ *     summary: Get specific audit log
+ *     description: |
+ *       Retrieve a single audit log entry.
+ *
+ *       **Parameter:** Use the `logId` field from the list endpoint (or `_id`, they're the same)
+ *     tags: [Audit]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Audit log ID (use logId from /audit list response)
+ *     responses:
+ *       200:
+ *         description: Audit log details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       description: MongoDB document ID and unique audit log identifier
+ *                     logId:
+ *                       type: string
+ *                       description: Explicit audit log ID (same as _id, convenient for API calls)
+ *                     _links:
+ *                       type: object
+ *                       description: Hypermedia links for API navigation (HATEOAS)
+ *                       properties:
+ *                         self:
+ *                           type: object
+ *                           properties:
+ *                             href:
+ *                               type: string
+ *                               description: URL to fetch this log
+ *                             method:
+ *                               type: string
+ *                             description:
+ *                               type: string
+ *                     userId:
+ *                       type: object
+ *                       description: User who performed the action
+ *                       properties:
+ *                         _id:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                     action:
+ *                       type: string
+ *                     resource:
+ *                       type: string
+ *                     resourceId:
+ *                       type: string
+ *                     changes:
+ *                       type: object
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *       404:
+ *         description: Audit log not found
+ */
+router.get('/:id', AuditController.getAuditLogById);
 
 /**
  * @swagger
@@ -399,7 +431,7 @@ router.get(
  *         schema:
  *           type: integer
  *           minimum: 1
- *           default: 90
+ *           default: 30
  *         description: Days to keep logs
  *     responses:
  *       200:

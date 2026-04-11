@@ -52,7 +52,7 @@ router.use(authMiddleware());
 
 /**
  * @swagger
- * /api/users/profile:
+ * /users/profile:
  *   get:
  *     summary: Get current user profile
  *     description: Get authenticated user's profile data (cached).
@@ -73,7 +73,7 @@ router.get('/profile', UserController.getProfile);
 
 /**
  * @swagger
- * /api/users/profile:
+ * /users/profile:
  *   put:
  *     summary: Update current user profile
  *     description: Update name, phone, bio. Avatar via separate endpoint.
@@ -112,7 +112,7 @@ router.put('/profile', validate(updateProfileSchema), UserController.updateProfi
 
 /**
  * @swagger
- * /api/users/avatar:
+ * /users/avatar:
  *   put:
  *     summary: Update user avatar
  *     description: Set user avatar URL (call upload/avatar first).
@@ -152,7 +152,7 @@ router.delete('/profile', UserController.deleteAccount);
 
 /**
  * @swagger
- * /api/users/export-my-data:
+ * /users/export-my-data:
  *   get:
  *     summary: Export my data
  *     description: Export user data for GDPR compliance.
@@ -171,7 +171,7 @@ router.get('/export-my-data', UserController.exportMyData);
 
 /**
  * @swagger
- * /api/users/change-email:
+ * /users/change-email:
  *   put:
  *     summary: Change user email
  *     description: Change email with password verification.
@@ -199,12 +199,17 @@ router.get('/export-my-data', UserController.exportMyData);
  *       409:
  *         description: Email in use
  */
-router.put('/change-email', validate(changeEmailSchema), UserController.changeEmail);
+router.put(
+  '/change-email',
+  authMiddleware(),
+  validate(changeEmailSchema),
+  UserController.changeEmail
+);
 
 // Admin routes - tag 'User-Admin'
 /**
  * @swagger
- * /api/users:
+ * /users:
  *   get:
  *     summary: Get all users (paginated)
  *     description: Admin list of all users with search/filter.
@@ -266,7 +271,74 @@ router.get(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /users/export:
+ *   get:
+ *     summary: Export users
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [csv, json]
+ *           default: csv
+ *     responses:
+ *       200:
+ *         description: Export data/stream
+ *         content:
+ *           application/csv:
+ *             schema:
+ *               type: string
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ */
+router.get(
+  '/export',
+  requireRole('admin', 'super_admin'),
+  validate(exportSchema),
+  UserController.exportUsers
+);
+
+/**
+ * @swagger
+ * /users/stats:
+ *   get:
+ *     summary: Get user statistics
+ *     tags: [User-Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Stats (counts, growth)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: number
+ *                     activeUsers:
+ *                       type: number
+ *                     newUsersThisMonth:
+ *                       type: number
+ *                     userGrowth:
+ *                       type: number
+ */
+router.get('/stats', requireRole('admin', 'super_admin'), UserController.getUserStats);
+
+/**
+ * @swagger
+ * /users/{id}:
  *   get:
  *     summary: Get user by ID
  *     tags: [User-Admin]
@@ -297,7 +369,7 @@ router.get(
 
 /**
  * @swagger
- * /api/users/{id}/role:
+ * /users/{id}/role:
  *   put:
  *     summary: Update user role
  *     tags: [User-Admin]
@@ -343,7 +415,7 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /users/{id}:
  *   put:
  *     summary: Update user (general admin update)
  *     description: Admin can update user profile fields, role, status.
@@ -410,7 +482,7 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}/status:
+ * /users/{id}/status:
  *   put:
  *     summary: Toggle user status
  *     tags: [User-Admin]
@@ -455,7 +527,7 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}/activity:
+ * /users/{id}/activity:
  *   get:
  *     summary: Get user activity logs
  *     description: Admin view user audit logs.
@@ -512,7 +584,7 @@ router.get(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /users/{id}:
  *   delete:
  *     summary: Delete user
  *     tags: [User-Admin]
@@ -539,7 +611,7 @@ router.delete(
 
 /**
  * @swagger
- * /api/users/bulk-delete:
+ * /users/bulk-delete:
  *   post:
  *     summary: Bulk delete users
  *     tags: [User-Admin]
@@ -585,72 +657,5 @@ router.post(
   }),
   UserController.bulkDeleteUsers
 );
-
-/**
- * @swagger
- * /api/users/export:
- *   get:
- *     summary: Export users
- *     tags: [User-Admin]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: format
- *         schema:
- *           type: string
- *           enum: [csv, json]
- *           default: csv
- *     responses:
- *       200:
- *         description: Export data/stream
- *         content:
- *           application/csv:
- *             schema:
- *               type: string
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- */
-router.get(
-  '/export',
-  requireRole('admin', 'super_admin'),
-  validate(exportSchema),
-  UserController.exportUsers
-);
-
-/**
- * @swagger
- * /api/users/stats:
- *   get:
- *     summary: Get user statistics
- *     tags: [User-Admin]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Stats (counts, growth)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalUsers:
- *                       type: number
- *                     activeUsers:
- *                       type: number
- *                     newUsersThisMonth:
- *                       type: number
- *                     userGrowth:
- *                       type: number
- */
-router.get('/stats', requireRole('admin', 'super_admin'), UserController.getUserStats);
 
 export default router;

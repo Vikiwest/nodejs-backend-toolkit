@@ -1,7 +1,5 @@
-// In your types file (e.g., @/types/index.ts)
 import { Document } from 'mongoose';
 
-// Add IUser interface
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -9,12 +7,17 @@ export interface IUser extends Document {
   role: UserRole;
   isActive: boolean;
   isEmailVerified: boolean;
+  isPhoneVerified: boolean; // ADD THIS
   isDeleted: boolean;
   twoFactorSecret?: string;
   isTwoFactorEnabled: boolean;
   lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
+  phone?: string | null;
+  avatar?: string;
+  bio?: string;
+  // Methods
   comparePassword(candidatePassword: string): Promise<boolean>;
   softDelete(): Promise<void>;
 }

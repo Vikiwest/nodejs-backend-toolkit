@@ -29,15 +29,25 @@ export class UserController {
     const userId = req.user!.id;
     const updates = req.body as any;
 
-    if (updates.password) delete updates.password;
-    if (updates.email) delete updates.email;
-    if (updates.role) delete updates.role;
-    if (updates.isActive) delete updates.isActive;
+    // Allow these fields to be updated
+    const allowedUpdates = ['name', 'phone', 'avatar', 'bio'];
 
-    const user = await UserModel.findByIdAndUpdate(userId, updates, {
+    // Filter updates to only allowed fields
+    const filteredUpdates = Object.keys(updates)
+      .filter((key) => allowedUpdates.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updates[key];
+        return obj;
+      }, {} as any);
+
+    if (Object.keys(filteredUpdates).length === 0) {
+      return ApiResponseUtil.badRequest(res, 'No valid fields to update');
+    }
+
+    const user = await UserModel.findByIdAndUpdate(userId, filteredUpdates, {
       new: true,
       runValidators: true,
-    }).select('-password');
+    }).select('-password -twoFactorSecret');
 
     if (!user) {
       return ApiResponseUtil.notFound(res, 'User not found');
@@ -50,7 +60,7 @@ export class UserController {
       action: 'UPDATE_PROFILE',
       resource: 'User',
       resourceId: userId,
-      changes: updates,
+      changes: filteredUpdates,
       req,
     });
 
@@ -320,10 +330,7 @@ export class UserController {
   static bulkDeleteUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { userIds } = req.body as any;
 
-    const result = await UserModel.updateMany(
-      { _id: { $in: userIds } },
-      { isDeleted: true, deletedAt: new Date() }
-    );
+    const result = await UserModel.deleteMany({ _id: { $in: userIds } });
 
     await Promise.all(userIds.map((id: string) => cacheService.del(`user:profile:${id}`)));
 
@@ -331,13 +338,13 @@ export class UserController {
       userId: req.user!.id,
       action: 'BULK_DELETE_USERS',
       resource: 'User',
-      changes: { userIds, count: result.modifiedCount },
+      changes: { userIds, count: result.deletedCount },
       req,
     });
 
     ApiResponseUtil.success(
       res,
-      { deletedCount: result.modifiedCount },
+      { deletedCount: result.deletedCount || 0 },
       'Users deleted successfully'
     );
   });

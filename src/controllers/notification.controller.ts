@@ -22,14 +22,18 @@ import { AuthRequest } from '../types';
  *           type: string
  *         read:
  *           type: boolean
+ *         createdAt:
+ *           type: string
+ *           format: date-time
  */
 
 export class NotificationController {
   /**
    * @swagger
-   * /api/notifications:
+   * /notifications:
    *   get:
    *     summary: Get user notifications
+   *     description: Get paginated user notifications
    *     tags: [Notifications]
    *     security:
    *       - bearerAuth: []
@@ -38,42 +42,51 @@ export class NotificationController {
    *         name: unread
    *         schema:
    *           type: boolean
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 20
    *     responses:
    *       200:
    *         content:
    *           application/json:
    *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Notification'
+   *               $ref: '#/components/schemas/PaginatedResponse'
    */
   static getNotifications = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const unreadOnly = req.query.unread === 'true';
-    const notifications = await notificationService.getUserNotifications(req.user!.id, unreadOnly);
+    let unreadFilter: boolean | undefined;
+    if (req.query.unread !== undefined) {
+      unreadFilter = req.query.unread === 'true';
+    }
+    const page = parseInt((req.query.page as string) || '1', 10);
+    const limit = parseInt((req.query.limit as string) || '20', 10);
+
+    const notifications = await notificationService.getUserNotifications(
+      req.user!.id,
+      unreadFilter,
+      page,
+      limit
+    );
+
     ApiResponseUtil.success(res, notifications);
   });
 
   /**
    * @swagger
-   * /api/notifications/unread:
-   *   get:
-   *     summary: Get unread notifications count
-   *     tags: [Notifications]
-   *     responses:
-   *       200:
-   *         description: Unread count
-   */
-  static getUnreadCount = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const notifications = await notificationService.getUserNotifications(req.user!.id, true);
-    ApiResponseUtil.success(res, { unread: notifications.length });
-  });
-
-  /**
-   * @swagger
-   * /api/notifications/{id}/read:
+   * /notifications/{id}/read:
    *   put:
    *     summary: Mark notification as read
    *     tags: [Notifications]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -83,34 +96,58 @@ export class NotificationController {
    *     responses:
    *       200:
    *         description: Marked as read
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 notification:
+   *                   $ref: '#/components/schemas/Notification'
+   *       404:
+   *         description: Notification not found
    */
   static markAsRead = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
-    await notificationService.markAsRead(req.user!.id, id);
-    ApiResponseUtil.success(res, null, 'Marked as read');
+    const notification = await notificationService.markAsRead(req.user!.id, id);
+    if (!notification) {
+      return ApiResponseUtil.notFound(res, 'Notification not found');
+    }
+    ApiResponseUtil.success(res, { notification }, 'Marked as read');
   });
 
   /**
    * @swagger
-   * /api/notifications/read-all:
+   * /notifications/read-all:
    *   put:
    *     summary: Mark all notifications as read
    *     tags: [Notifications]
+   *     security:
+   *       - bearerAuth: []
    *     responses:
    *       200:
    *         description: All marked as read
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 markedAsRead:
+   *                   type: integer
+   *                   description: Number of notifications marked as read
    */
   static markAllRead = asyncHandler(async (req: AuthRequest, res: Response) => {
-    // Stub - mark all for user
-    ApiResponseUtil.success(res, null, 'All notifications marked as read');
+    const count = await notificationService.markAllRead(req.user!.id);
+    ApiResponseUtil.success(res, { markedAsRead: count }, 'All notifications marked as read');
   });
 
   /**
    * @swagger
-   * /api/notifications/{id}:
+   * /notifications/{id}:
    *   delete:
    *     summary: Delete notification
    *     tags: [Notifications]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -120,18 +157,34 @@ export class NotificationController {
    *     responses:
    *       200:
    *         description: Deleted
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                   description: The ID of the deleted notification
+   *       404:
+   *         description: Notification not found
    */
   static deleteNotification = asyncHandler(async (req: AuthRequest, res: Response) => {
-    // Stub delete
-    ApiResponseUtil.success(res, null, 'Notification deleted');
+    const { id } = req.params;
+    const deleted = await notificationService.deleteNotification(req.user!.id, id);
+    if (!deleted) {
+      return ApiResponseUtil.notFound(res, 'Notification not found');
+    }
+    ApiResponseUtil.success(res, { id }, 'Notification deleted');
   });
 
   /**
    * @swagger
-   * /api/notifications/preferences:
-   *   post:
+   * /notifications/preferences:
+   *   put:
    *     summary: Update notification preferences
    *     tags: [Notifications]
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       content:
    *         application/json:
@@ -150,7 +203,10 @@ export class NotificationController {
    */
   static updatePreferences = asyncHandler(async (req: AuthRequest, res: Response) => {
     const preferences = req.body;
-    // Stub - save to user profile
-    ApiResponseUtil.success(res, preferences, 'Preferences updated');
+    const updatedPreferences = await notificationService.updatePreferences(
+      req.user!.id,
+      preferences
+    );
+    ApiResponseUtil.success(res, updatedPreferences, 'Preferences updated');
   });
 }

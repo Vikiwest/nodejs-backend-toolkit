@@ -22,6 +22,7 @@ import { emailService } from '../services/emailService';
 import { cacheService } from '../services/cacheService';
 import encryptionService from '../utils/encryption';
 import { twoFactorService } from '../services/twoFactorService';
+import { auditService } from '../services/auditService';
 import { AuthRequest } from '../types';
 
 /**
@@ -48,6 +49,9 @@ import { AuthRequest } from '../types';
  *               password:
  *                 type: string
  *                 minLength: 6
+ *               phone:
+ *                 type: string
+ *                 pattern: '^\+?[1-9]\d{9,14}$'
  *     responses:
  *       201:
  *         description: Registration successful
@@ -70,14 +74,32 @@ import { AuthRequest } from '../types';
  */
 export class AuthController {
   static register = asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
+
+    // Validate phone number if provided
+    if (phone && !/^[0-9]{10,15}$/.test(phone)) {
+      return ApiResponseUtil.badRequest(res, 'Please enter a valid phone number (10-15 digits)');
+    }
 
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
       return ApiResponseUtil.conflict(res, 'Email already registered');
     }
 
-    const user = await UserModel.create({ name, email, password });
+    // Check if phone number is already registered (if provided)
+    if (phone) {
+      const existingPhone = await UserModel.findOne({ phone });
+      if (existingPhone) {
+        return ApiResponseUtil.conflict(res, 'Phone number already registered');
+      }
+    }
+
+    const user = await UserModel.create({
+      name,
+      email,
+      password,
+      phone: phone || null, // Set to null if not provided
+    });
 
     const verificationToken = encryptionService.generateRandomToken(32);
     await cacheService.set(`verify:${verificationToken}`, user._id.toString(), 86400);
@@ -97,6 +119,168 @@ export class AuthController {
       { user: userResponse, tokens },
       'Registration successful. Please verify your email.'
     );
+  });
+
+  // Add these methods to your AuthController for phone verification
+
+  /**
+   * @swagger
+   * /auth/send-phone-verification:
+   *   post:
+   *     summary: Send phone verification code
+   *     tags: [Auth-Verification]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [phone]
+   *             properties:
+   *               phone:
+   *                 type: string
+   *                 pattern: '^[0-9]{10,15}$'
+   *     responses:
+   *       200:
+   *         description: Verification code sent
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Invalid phone number
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       409:
+   *         description: Phone already verified
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static sendPhoneVerification = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const { phone } = req.body;
+
+    if (!phone || !/^[0-9]{10,15}$/.test(phone)) {
+      return ApiResponseUtil.badRequest(res, 'Please provide a valid phone number (10-15 digits)');
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return ApiResponseUtil.notFound(res, 'User not found');
+    }
+
+    // Check if phone is already verified
+    if (user.isPhoneVerified) {
+      return ApiResponseUtil.badRequest(res, 'Phone number already verified');
+    }
+
+    // Check if phone is used by another user
+    const existingUser = await UserModel.findOne({ phone, _id: { $ne: userId } });
+    if (existingUser) {
+      return ApiResponseUtil.conflict(res, 'Phone number already registered to another account');
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store code in cache with 10-minute expiration
+    await cacheService.set(`phone_verify:${userId}`, verificationCode, 600);
+
+    // Store the phone number temporarily
+    await cacheService.set(`phone_temp:${userId}`, phone, 600);
+
+    // Here you would integrate with an SMS service (Twilio, AWS SNS, etc.)
+    // await smsService.sendVerificationCode(phone, verificationCode);
+
+    // For now, log the code (in production, send via SMS)
+    console.log(`Phone verification code for ${phone}: ${verificationCode}`);
+
+    ApiResponseUtil.success(res, null, 'Verification code sent to your phone');
+  });
+
+  /**
+   * @swagger
+   * /auth/verify-phone:
+   *   post:
+   *     summary: Verify phone number with code
+   *     tags: [Auth-Verification]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [code]
+   *             properties:
+   *               code:
+   *                 type: string
+   *                 minLength: 6
+   *                 maxLength: 6
+   *     responses:
+   *       200:
+   *         description: Phone verified
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessResponse'
+   *       400:
+   *         description: Invalid or expired code
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
+  static verifyPhone = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.id;
+    const { code } = req.body;
+
+    if (!code || code.length !== 6) {
+      return ApiResponseUtil.badRequest(res, 'Please provide a valid 6-digit verification code');
+    }
+
+    // Get stored verification code
+    const storedCode = await cacheService.get(`phone_verify:${userId}`);
+    if (!storedCode || storedCode !== code) {
+      return ApiResponseUtil.badRequest(res, 'Invalid or expired verification code');
+    }
+
+    // Get temporary phone number
+    const phone = await cacheService.get(`phone_temp:${userId}`);
+    if (!phone) {
+      return ApiResponseUtil.badRequest(
+        res,
+        'Verification session expired. Please request a new code'
+      );
+    }
+
+    // Update user with verified phone number
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        phone: phone,
+        isPhoneVerified: true,
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return ApiResponseUtil.notFound(res, 'User not found');
+    }
+
+    // Clean up cache
+    await cacheService.del(`phone_verify:${userId}`);
+    await cacheService.del(`phone_temp:${userId}`);
+    await cacheService.del(`user:profile:${userId}`);
+
+    ApiResponseUtil.success(res, { user }, 'Phone number verified successfully');
   });
 
   /**
@@ -154,6 +338,15 @@ export class AuthController {
     user.lastLogin = new Date();
     await user.save();
 
+    // Log login activity
+    await auditService.log({
+      userId: user._id.toString(),
+      action: 'login',
+      resource: 'auth',
+      resourceId: user._id.toString(),
+      req,
+    });
+
     const tokens = JWTService.generateTokens({
       userId: user._id.toString(),
       email: user.email,
@@ -187,7 +380,16 @@ export class AuthController {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  static logout = asyncHandler(async (_req: AuthRequest, res: Response) => {
+  static logout = asyncHandler(async (req: AuthRequest, res: Response) => {
+    // Log logout activity
+    await auditService.log({
+      userId: req.user!.id,
+      action: 'logout',
+      resource: 'auth',
+      resourceId: req.user!.id,
+      req,
+    });
+
     ApiResponseUtil.success(res, null, 'Logged out successfully');
   });
 
@@ -497,7 +699,13 @@ export class AuthController {
    */
   static changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
-    const userId = req.user!.id;
+
+    // Add a safety check
+    if (!req.user || !req.user.id) {
+      return ApiResponseUtil.unauthorized(res, 'User not authenticated');
+    }
+
+    const userId = req.user.id;
 
     const user = await UserModel.findById(userId).select('+password');
     if (!user) {

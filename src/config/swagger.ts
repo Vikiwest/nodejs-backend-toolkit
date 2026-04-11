@@ -12,12 +12,11 @@ const options = {
     },
     servers: [
       {
-        url: '/api',
+        url: 'http://localhost:3002/api',
         description: 'API Server',
       },
     ],
     tags: [
-      { name: 'Auth', description: 'Authentication and user management endpoints' },
       {
         name: 'Auth-Basic',
         description: 'Basic authentication operations (register, login, logout, refresh)',
@@ -30,7 +29,7 @@ const options = {
       { name: 'Upload', description: 'File upload and management' },
       { name: 'Audit', description: 'Audit logs and compliance' },
       { name: 'Email', description: 'Email sending services' },
-      { name: 'Notification', description: 'User notifications' },
+      { name: 'Notifications', description: 'User notifications' },
       { name: 'Dashboard', description: 'Analytics and statistics' },
       { name: 'Monitoring', description: 'Health checks and metrics' },
       { name: 'Payment', description: 'Payment processing' },
@@ -52,6 +51,9 @@ const options = {
             name: { type: 'string', minLength: 2, maxLength: 100 },
             email: { type: 'string', format: 'email' },
             role: { type: 'string', enum: ['user', 'admin', 'moderator', 'super_admin'] },
+            phone: { type: 'string' },
+            avatar: { type: 'string', format: 'uri' },
+            bio: { type: 'string', maxLength: 500 },
             isActive: { type: 'boolean', default: true },
             isEmailVerified: { type: 'boolean', default: false },
             lastLogin: { type: 'string', format: 'date-time' },

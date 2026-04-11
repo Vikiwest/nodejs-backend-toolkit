@@ -18,6 +18,9 @@ const registerSchema = {
     name: commonSchemas.name,
     email: commonSchemas.email,
     password: commonSchemas.password,
+    phone: Joi.string()
+      .pattern(/^[0-9]{10,15}$/)
+      .optional(),
   }),
 };
 
@@ -66,6 +69,20 @@ const resendVerificationSchema = {
   }),
 };
 
+const sendPhoneVerificationSchema = {
+  body: Joi.object({
+    phone: Joi.string()
+      .pattern(/^[0-9]{10,15}$/)
+      .required(),
+  }),
+};
+
+const verifyPhoneSchema = {
+  body: Joi.object({
+    code: Joi.string().length(6).required(),
+  }),
+};
+
 router.post('/register', validate(registerSchema), AuthController.register);
 
 router.post('/login', validate(loginSchema), AuthController.login);
@@ -86,12 +103,31 @@ router.post(
   AuthController.resendVerification
 );
 
-router.post('/change-password', validate(changePasswordSchema), AuthController.changePassword);
+router.post(
+  '/change-password',
+  authMiddleware(),
+  validate(changePasswordSchema),
+  AuthController.changePassword
+);
 
-router.post('/enable-2fa', AuthController.enable2FA);
+router.post('/enable-2fa', authMiddleware(), AuthController.enable2FA);
 
-router.post('/verify-2fa', validate(verify2faSchema), AuthController.verify2FA);
+router.post('/verify-2fa', authMiddleware(), validate(verify2faSchema), AuthController.verify2FA);
 
-router.post('/disable-2fa', AuthController.disable2FA);
+router.post('/disable-2fa', authMiddleware(), AuthController.disable2FA);
+
+router.post(
+  '/send-phone-verification',
+  authMiddleware(),
+  validate(sendPhoneVerificationSchema),
+  AuthController.sendPhoneVerification
+);
+
+router.post(
+  '/verify-phone',
+  authMiddleware(),
+  validate(verifyPhoneSchema),
+  AuthController.verifyPhone
+);
 
 export default router;

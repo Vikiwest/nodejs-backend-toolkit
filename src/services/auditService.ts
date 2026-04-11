@@ -21,8 +21,8 @@ export class AuditService {
         resource: data.resource,
         resourceId: data.resourceId,
         changes: data.changes,
-        ip: data.req?.ip || data.req?.socket.remoteAddress,
-        userAgent: data.req?.headers['user-agent'],
+        ip: data.req?.ip || data.req?.socket?.remoteAddress || '',
+        userAgent: data.req?.headers?.['user-agent'] || '',
         metadata: data.metadata,
         timestamp: new Date(),
       };
@@ -35,7 +35,9 @@ export class AuditService {
   }
 
   async getAuditTrail(resource: string, resourceId: string): Promise<any[]> {
-    return await AuditModel.find({ resource, resourceId })
+    // Normalize resourceId to string as it's stored as String in schema
+    const normalizedResourceId = String(resourceId);
+    return await AuditModel.find({ resource, resourceId: normalizedResourceId })
       .sort({ timestamp: -1 })
       .populate('userId', 'name email')
       .lean();
@@ -45,14 +47,17 @@ export class AuditService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
+    // Normalize userId to string as it's stored as String in schema
+    const normalizedUserId = String(userId);
+
     const activities = await AuditModel.aggregate([
-      { $match: { userId, timestamp: { $gte: startDate } } },
+      { $match: { userId: normalizedUserId, timestamp: { $gte: startDate } } },
       { $group: { _id: '$action', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]);
 
     const timeline = await AuditModel.aggregate([
-      { $match: { userId, timestamp: { $gte: startDate } } },
+      { $match: { userId: normalizedUserId, timestamp: { $gte: startDate } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },

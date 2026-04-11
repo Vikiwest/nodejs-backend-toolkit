@@ -39,25 +39,34 @@ export class EmailJobs {
     });
 
     queueService.on('job:email-bulk', async (job: any) => {
-      const { recipients, subject, template, data } = job.data.payload;
-      LoggerService.info(`Processing bulk email to ${recipients.length} recipients`);
+      const { recipients, template, data } = job.data.payload;
+      LoggerService.info(
+        `Processing bulk email to ${recipients.length} recipients using template "${template}"`
+      );
 
       const results = [];
       for (const recipient of recipients) {
         try {
+          // Get the template with recipient-specific data
+          const emailTemplate = await emailService.getTemplate(template, {
+            ...data,
+            recipient: recipient, // Add recipient info if needed
+          });
+
           await emailService.sendEmail({
             to: recipient,
-            subject,
-            html: EmailJobs.renderTemplate(template, { ...data, name: recipient.name }),
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
           });
           results.push({ recipient, success: true });
         } catch (error) {
-          results.push({ recipient, success: false, error });
+          LoggerService.error(`Bulk email failed for ${recipient}`, error as Error);
+          results.push({ recipient, success: false, error: (error as Error).message });
         }
       }
 
       LoggerService.info(
-        `Bulk email completed: ${results.filter((r) => r.success).length}/${recipients.length}`
+        `Bulk email completed: ${results.filter((r) => r.success).length}/${recipients.length} successful`
       );
       return results;
     });

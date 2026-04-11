@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 import { databaseConnection } from '../src/config/database';
 import { UserModel } from '../src/models/user.model';
-import encryptionService from '../src/utils/encryption';
-import config from '../src/config/env';
 import { LoggerService } from '../src/utils/logger';
 
 async function seed() {
@@ -11,12 +9,12 @@ async function seed() {
     LoggerService.info('Connected to MongoDB for seeding');
 
     // Create admin user
-    const adminExists = await UserModel.findOne({ email: 'admin@example.com' });
+    const adminExists = await UserModel.findOne({ email: 'chidiolorunda@example.com' });
     if (!adminExists) {
       await UserModel.create({
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: await encryptionService.hashPassword('Admin123!'),
+        name: 'Victory West',
+        email: 'chidiolorunda@example.com',
+        password: 'toolkitAdminpassword!',
         role: 'super_admin',
         isEmailVerified: true,
       });
@@ -25,15 +23,22 @@ async function seed() {
 
     // Create test users
     for (let i = 1; i <= 10; i++) {
-      const exists = await UserModel.findOne({ email: `user${i}@example.com` });
-      if (!exists) {
-        await UserModel.create({
+      const email = `user${i}@example.com`;
+      let user = await UserModel.findOne({ email });
+      if (!user) {
+        user = await UserModel.create({
           name: `Test User ${i}`,
-          email: `user${i}@example.com`,
-          password: await encryptionService.hashPassword('Test123!'),
+          email,
+          password: 'Test123!',
           role: 'user',
           isEmailVerified: true,
         });
+        LoggerService.info(`Test user ${i} created`);
+      } else {
+        // Update password if user exists (in case it was double-hashed)
+        user.password = 'Test123!';
+        await user.save();
+        LoggerService.info(`Test user ${i} password updated`);
       }
     }
 

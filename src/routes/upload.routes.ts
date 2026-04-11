@@ -21,7 +21,7 @@ router.use(authMiddleware());
 
 /**
  * @swagger
- * /api/uploads/single:
+ * /uploads/single:
  *   post:
  *     summary: Upload single file
  *     description: Upload a single file (image/PDF). Max 10MB.
@@ -67,7 +67,7 @@ router.post('/single', upload.single('file'), uploadService.uploadSingle);
 
 /**
  * @swagger
- * /api/uploads/multiple:
+ * /uploads/multiple:
  *   post:
  *     summary: Upload multiple files
  *     description: Upload up to 5 files at once. Max 10MB each.
@@ -115,7 +115,7 @@ router.post('/multiple', upload.array('files', 5), uploadService.uploadMultiple)
 
 /**
  * @swagger
- * /api/uploads/avatar:
+ * /uploads/avatar:
  *   post:
  *     summary: Upload user avatar
  *     description: Upload and set user avatar image. Max 10MB.
@@ -159,7 +159,7 @@ router.post('/avatar', upload.single('avatar'), uploadService.uploadAvatar);
 
 /**
  * @swagger
- * /api/uploads/document:
+ * /uploads/document:
  *   post:
  *     summary: Upload document
  *     description: Upload PDF document. Max 10MB.
@@ -203,7 +203,7 @@ router.post('/document', upload.single('document'), uploadService.uploadDocument
 
 /**
  * @swagger
- * /api/uploads/{filename}:
+ * /uploads/{filename}:
  *   get:
  *     summary: Get file by filename
  *     description: Get information about uploaded file (ownership check).
@@ -246,7 +246,7 @@ router.get('/:filename', uploadService.getFile);
 
 /**
  * @swagger
- * /api/uploads/{filename}:
+ * /uploads/{filename}:
  *   delete:
  *     summary: Delete file
  *     description: Delete a file uploaded by the user.
@@ -274,7 +274,7 @@ router.delete('/:filename', uploadService.deleteFile);
 
 /**
  * @swagger
- * /api/uploads/list:
+ * /uploads/list:
  *   get:
  *     summary: List user's files
  *     description: List all files uploaded by the current user.

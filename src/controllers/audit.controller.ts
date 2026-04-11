@@ -5,6 +5,28 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { AuthRequest } from '../types';
 import { Parser } from 'json2csv';
 
+// Transform logs to include helpful metadata for frontend developers
+const enrichAuditLog = (log: any, baseUrl: string = '/api/audit') => {
+  const doc = log.toObject ? log.toObject() : log;
+  return {
+    ...doc,
+    logId: doc._id.toString(), // Explicit ID field for fetching this log
+    _links: {
+      self: {
+        href: `${baseUrl}/${doc._id.toString()}`,
+        method: 'GET',
+        description: 'Fetch this audit log',
+      },
+    },
+  };
+};
+
+// Build userId filter - normalize to string format
+const buildUserIdFilter = (userId: any) => {
+  // Ensure userId is string format (req.params always gives string)
+  return { userId: String(userId) };
+};
+
 export class AuditController {
   static getAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
     const {
@@ -42,7 +64,8 @@ export class AuditController {
       AuditModel.countDocuments(filter),
     ]);
 
-    ApiResponseUtil.paginated(res, logs, total, Number(page), Number(limit));
+    const enrichedLogs = logs.map((log) => enrichAuditLog(log));
+    ApiResponseUtil.paginated(res, enrichedLogs, total, Number(page), Number(limit));
   });
 
   static getAuditStats = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -89,7 +112,7 @@ export class AuditController {
     if (!log) {
       return ApiResponseUtil.notFound(res, 'Audit log not found');
     }
-    ApiResponseUtil.success(res, log);
+    ApiResponseUtil.success(res, enrichAuditLog(log));
   });
 
   static exportAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -109,6 +132,7 @@ export class AuditController {
 
     if (format === 'csv') {
       const fields = [
+        'logId',
         'timestamp',
         'userId.name',
         'userId.email',
@@ -118,16 +142,18 @@ export class AuditController {
         'ip',
         'userAgent',
       ];
+      const enrichedForCsv = logs.map((log) => ({ ...log, logId: log._id.toString() }));
       const json2csv = new Parser({ fields });
-      const csv = json2csv.parse(logs);
+      const csv = json2csv.parse(enrichedForCsv);
 
       res.header('Content-Type', 'text/csv');
       res.attachment(`audit-logs-${Date.now()}.csv`);
       return res.send(csv);
     } else {
+      const enrichedLogs = logs.map((log) => enrichAuditLog(log));
       res.header('Content-Type', 'application/json');
       res.attachment(`audit-logs-${Date.now()}.json`);
-      return res.send(JSON.stringify(logs, null, 2));
+      return res.send(JSON.stringify(enrichedLogs, null, 2));
     }
   });
 
@@ -138,12 +164,19 @@ export class AuditController {
     const skip = (Number(page) - 1) * Number(limit);
     const sort: any = { [sortBy as string]: sortOrder === 'desc' ? -1 : 1 };
 
+    const userIdFilter = buildUserIdFilter(userId);
+
     const [logs, total] = await Promise.all([
-      AuditModel.find({ userId }).sort(sort).skip(skip).limit(Number(limit)),
-      AuditModel.countDocuments({ userId }),
+      AuditModel.find(userIdFilter)
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('userId', 'name email'),
+      AuditModel.countDocuments(userIdFilter),
     ]);
 
-    ApiResponseUtil.paginated(res, logs, total, Number(page), Number(limit));
+    const enrichedLogs = logs.map((log) => enrichAuditLog(log));
+    ApiResponseUtil.paginated(res, enrichedLogs, total, Number(page), Number(limit));
   });
 
   static getResourceAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -153,22 +186,52 @@ export class AuditController {
     const skip = (Number(page) - 1) * Number(limit);
     const sort: any = { [sortBy as string]: sortOrder === 'desc' ? -1 : 1 };
 
-    const filter: any = { resource: type, resourceId: id };
+    // Build flexible resource filter - ensure resourceId is string format
+    const filter: any = { resource: type, resourceId: String(id) };
 
     const [logs, total] = await Promise.all([
-      AuditModel.find(filter).sort(sort).skip(skip).limit(Number(limit)),
+      AuditModel.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('userId', 'name email'),
       AuditModel.countDocuments(filter),
     ]);
 
-    ApiResponseUtil.paginated(res, logs, total, Number(page), Number(limit));
+    const enrichedLogs = logs.map((log) => enrichAuditLog(log));
+    ApiResponseUtil.paginated(res, enrichedLogs, total, Number(page), Number(limit));
   });
 
   static cleanupAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { days = 90 } = req.query;
-    const cutoff = new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000);
+    const days = Number(req.query.days ?? 30); // Changed default from 90 to 30 days
+    if (!Number.isFinite(days) || days < 1) {
+      return ApiResponseUtil.badRequest(res, 'The days query parameter must be a positive integer');
+    }
 
-    const result = await AuditModel.deleteMany({ timestamp: { $lt: cutoff } });
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const filter = {
+      $or: [
+        { timestamp: { $lt: cutoff } },
+        { createdAt: { $lt: cutoff } },
+        {
+          $expr: {
+            $lt: [{ $toDate: '$_id' }, cutoff],
+          },
+        },
+      ],
+    };
 
-    ApiResponseUtil.success(res, { deletedCount: result.deletedCount ?? 0 }, 'Cleanup completed');
+    const matchingCount = await AuditModel.countDocuments(filter);
+    const result = await AuditModel.deleteMany(filter);
+
+    ApiResponseUtil.success(
+      res,
+      {
+        deletedCount: result.deletedCount ?? 0,
+        matchingCount,
+        cutoff: cutoff.toISOString(),
+      },
+      'Cleanup completed'
+    );
   });
 }

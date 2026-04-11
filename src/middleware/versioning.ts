@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 
 export const apiVersioning = (req: Request, res: Response, next: NextFunction) => {
+  // Skip versioning for non-API routes
+  if (!req.path.startsWith('/api')) {
+    return next();
+  }
+
   const version = (req.headers['api-version'] as string) || (req.query.version as string) || 'v1';
 
   // Set version in request
